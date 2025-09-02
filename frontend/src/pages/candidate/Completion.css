@@ -1,0 +1,269 @@
+.completion-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.completion-container {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  max-width: 800px;
+  width: 100%;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+.success-icon {
+  margin-bottom: 30px;
+}
+
+.checkmark {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto;
+}
+
+.checkmark-circle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  animation: scale-in 0.5s ease-in-out;
+}
+
+.checkmark-stem {
+  position: absolute;
+  top: 36px;
+  left: 28px;
+  width: 5px;
+  height: 14px;
+  background: white;
+  border-radius: 2px;
+  transform: rotate(45deg);
+  animation: stem-in 0.3s ease-in-out 0.2s both;
+}
+
+.checkmark-kick {
+  position: absolute;
+  top: 44px;
+  left: 20px;
+  width: 12px;
+  height: 5px;
+  background: white;
+  border-radius: 2px;
+  transform: rotate(-45deg);
+  animation: kick-in 0.3s ease-in-out 0.4s both;
+}
+
+@keyframes scale-in {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes stem-in {
+  0% { height: 0; }
+  100% { height: 14px; }
+}
+
+@keyframes kick-in {
+  0% { width: 0; }
+  100% { width: 12px; }
+}
+
+.completion-content h1 {
+  color: #27ae60;
+  margin-bottom: 10px;
+  font-size: 2.5rem;
+}
+
+.completion-content h2 {
+  color: #2c3e50;
+  margin-bottom: 25px;
+  font-weight: 400;
+}
+
+.completion-message {
+  text-align: left;
+  margin: 30px 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #555;
+}
+
+.next-steps {
+  text-align: left;
+  margin: 30px 0;
+}
+
+.next-steps h3 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+
+.step-icon {
+  font-size: 24px;
+  min-width: 30px;
+}
+
+.step-text {
+  flex: 1;
+}
+
+.step-text strong {
+  color: #2c3e50;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.contact-info {
+  text-align: left;
+  margin: 30px 0;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.contact-info h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.contact-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.session-info {
+  text-align: left;
+  margin: 30px 0;
+  padding: 20px;
+  background: #e8f4fd;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+
+.session-info h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.session-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.session-id {
+  font-family: monospace;
+  background: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.feedback-section {
+  margin: 30px 0;
+  padding: 20px;
+  background: #fff9e6;
+  border-radius: 8px;
+  border-left: 4px solid #f39c12;
+}
+
+.feedback-section h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.rating-stars {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  opacity: 0.3;
+}
+
+.star-btn:hover {
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+.closing-message {
+  margin-top: 30px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.closing-message p {
+  margin: 10px 0;
+  color: #2c3e50;
+}
+
+@media (max-width: 768px) {
+  .completion-container {
+    padding: 20px;
+    margin: 10px;
+  }
+  
+  .completion-content h1 {
+    font-size: 2rem;
+  }
+  
+  .contact-details {
+    gap: 15px;
+  }
+  
+  .detail-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+}
