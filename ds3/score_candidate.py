@@ -1,175 +1,130 @@
-# ds3/score_candidate.py
-
-import re
+import os
 import json
 from pathlib import Path
+import google.generativeai as genai
 
-# --- ОБЪЯСНЕНИЕ ДЛЯ КОМАНДЫ ---
-# Это полная реализация логики скоринга в соответствии с документом 'how_to_score.pdf'.
-# Скрипт использует простые, но надежные методы анализа текста (ключевые слова, регулярные выражения),
-# что делает его идеальным для хакатона. Все сложные NLP-модели можно будет добавить позже.
+try:
+    GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
+    genai.configure(api_key=GOOGLE_API_KEY)
+except (TypeError, ValueError) as e:
+    print(f"ОШИБКА: API-ключ не найден или некорректен. Убедитесь, что вы создали переменную окружения GOOGLE_API_KEY. Ошибка: {e}")
+    exit()
 
-class ScoringModel:
-    def __init__(self, weights: dict):
-        if sum(weights.values()) != 1.0:
-            raise ValueError("Сумма весов должна быть равна 1.0")
+class ScoringModelGemini:
+    def __init__(self, prompts: dict, weights: dict):
+        if not prompts.get("scoring") or not prompts.get("experience"):
+            raise ValueError("Словарь prompts должен содержать ключи 'scoring' и 'experience'")
+        self.prompts = prompts
         self.weights = weights
+        self.model = genai.GenerativeModel(
+            'gemini-1.5-flash-latest',
+            generation_config={"temperature": 0, "top_p": 0.1}
+        )
 
-    def _analyze_hard_skill_answer(self, answer: str) -> (int, str):
-        answer_len = len(answer.split())
-        if answer_len < 5 or re.search(r"не помню|тайна|да, работал|нет, не работал", answer, re.I):
-            return 0, "Уход от ответа или ответ слишком короткий."
-        has_tools = re.search(r"FICO Falcon|Neo4j|Oracle|PostgreSQL|SQL|Python|Java|BPMN|Jira", answer, re.I)
-        has_metrics = re.search(r"\d+%|снизить|увеличить|оптимизировать|ускорить", answer, re.I)
-        has_reasoning = re.search(r"потому что|так как|поскольку|чтобы", answer, re.I)
-        if has_reasoning and has_tools and has_metrics:
-            return 5, "Глубокая экспертиза: приведены инструменты, метрики и объяснение выбора решения."
-        if has_tools and has_metrics:
-            return 4, "Конкретный кейс: упомянуты инструменты и измеримые результаты."
-        if has_tools:
-            return 3, "Конкретный кейс: упомянуты инструменты, но без четких метрик."
-        return 2, "Общее описание: есть понимание процесса, но без конкретных примеров."
+    def _get_gemini_assessment(self, prompt: str, skill_name: str) -> dict:
+        response = None
+        try:
+            response = self.model.generate_content(prompt)
+            json_response_text = response.text.strip().replace("```json", "").replace("```", "")
+            return json.loads(json_response_text)
+        except Exception as e:
+            print(f"!!! Ошибка при обращении к Gemini API или парсинге JSON: {e}")
+            if response:
+                print(f"!!! Ответ от Gemini, который не удалось распарсить: {response.text}")
+            return {"skill_assessed": skill_name, "score": 0, "assessment_comment": f"Ошибка оценки: {e}"}
 
-    def _analyze_star_answer(self, answer: str) -> (int, str):
-        has_situation = re.search(r"ситуация|проблема|была задача", answer, re.I)
-        has_task = re.search(r"моя задача|нужно было|цель была", answer, re.I)
-        has_action = re.search(r"я сделал|мы решили|я проанализировал", answer, re.I)
-        has_result = re.search(r"в результате|в итоге|это позволило", answer, re.I)
-        has_reflection = re.search(r"я понял|это научило|в будущем", answer, re.I)
+    def _score_skills(self, transcript_data: dict) -> (float, float, list, list):
+        assessments = {"hard_skill": [], "soft_skill": []}
+        dialogue_parts = transcript_data.get("dialogue_parts", [])
+
+        for part in dialogue_parts:
+            category = part.get("assessment_category")
+            if category in assessments:
+                skill_assessed = part.get("skill_assessed", "unknown")
+                print(f"-> Оцениваю навык: {skill_assessed}...")
+                
+                # Используем ручную замену вместо .format()
+                prompt = self.prompts["scoring"].replace("{{question_text}}", part.get("question", ""))
+                prompt = prompt.replace("{{candidate_answer}}", part.get("answer", ""))
+                prompt = prompt.replace("{{skill_being_assessed}}", skill_assessed)
+
+                gemini_result = self._get_gemini_assessment(prompt, skill_name=skill_assessed)
+                assessments[category].append(gemini_result)
         
-        star_components = sum([bool(has_situation), bool(has_task), bool(has_action), bool(has_result)])
+        hard_scores = [res.get("score", 0) for res in assessments["hard_skill"]]
+        hard_score_percent = (sum(hard_scores) / (len(hard_scores) * 5)) * 100 if hard_scores else 0
         
-        if has_reflection and star_components >= 3:
-            return 5, "Структура STAR + Рефлексия."
-        if star_components == 4:
-            return 4, "Четкая структура STAR."
-        if star_components >= 2:
-            return 2, "История без четкой структуры."
-        return 0, "Ответ не структурирован."
-
-    def _analyze_motivation_answer(self, answer: str) -> (int, str):
-        is_negative = re.search(r"уволили|плохой коллектив|низкая зарплата", answer, re.I)
-        is_template = re.search(r"стабильная компания|белая зарплата|соцпакет", answer, re.I)
-        is_specific = re.search(r"ВТБ|антифрод|ваш проект|ваша статья|технология X", answer, re.I)
+        soft_scores = [res.get("score", 0) for res in assessments["soft_skill"]]
+        soft_score_percent = (sum(soft_scores) / (len(soft_scores) * 5)) * 100 if soft_scores else 0
         
-        if is_specific:
-            return 5, "Конкретная, осознанная мотивация."
-        if is_template and not is_negative:
-            return 2, "Общая положительная мотивация."
-        return 1, "Шаблонный или негативный ответ."
+        return hard_score_percent, soft_score_percent, assessments["hard_skill"], assessments["soft_skill"]
+
+    def _score_experience(self, transcript_data: dict) -> (float, dict):
+        print("-> Оцениваю опыт кандидата...")
         
-    def _score_hard_skills(self, structured_transcript: dict) -> (float, dict):
-        hard_skills_scores = []
-        details = []
-        assessed_skills = structured_transcript.get("assessed_hard_skills", {})
-        if not assessed_skills:
-            return 0.0, {"details": details, "comment": "Не удалось оценить технические навыки."}
-        for skill, answer in assessed_skills.items():
-            score, comment = self._analyze_hard_skill_answer(answer)
-            hard_skills_scores.append(score)
-            details.append({"skill": skill, "score": f"{score}/5", "comment": comment})
-        total_score = sum(hard_skills_scores)
-        max_possible_score = len(assessed_skills) * 5
-        final_percentage = (total_score / max_possible_score) * 100 if max_possible_score > 0 else 0
-        return final_percentage, {"details": details}
-
-    def _score_experience(self, vacancy_data: dict, resume_data: dict, structured_transcript: dict) -> (float, dict):
-        req_exp = vacancy_data.get("required_experience_years", 0)
-        cand_exp = resume_data.get("total_experience_years", 0)
-        duration_score_pct = 100.0 if cand_exp >= req_exp else 0.0
-
-        relevance_score_5 = 3.5  # Заглушка: оценка 3.5 из 5
-        relevance_score_pct = (relevance_score_5 / 5) * 100
-
-        functionality_score_pct = 75.0  # Заглушка: 75%
+        # Используем ручную замену вместо .format()
+        prompt = self.prompts["experience"].replace("{{vacancy_info}}", json.dumps(transcript_data.get("vacancy_info", {}), ensure_ascii=False))
+        prompt = prompt.replace("{{resume_info}}", json.dumps(transcript_data.get("resume_info", {}), ensure_ascii=False))
+        prompt = prompt.replace("{{candidate_answer}}", transcript_data.get("experience_question_answer", "Кандидат не предоставил развернутого ответа об опыте."))
         
-        penalty_multiplier = 1.0 # Заглушка: штрафа нет
-
-        final_percentage = ((duration_score_pct + relevance_score_pct + functionality_score_pct) / 3) * penalty_multiplier
+        gemini_result = self._get_gemini_assessment(prompt, skill_name="Experience")
         
-        details = {
-            "comment": "Оценка опыта частично использует заглушки.",
-            "scores": {
-                "duration": duration_score_pct,
-                "relevance": relevance_score_pct,
-                "functionality": functionality_score_pct
-            },
-            "penalty": penalty_multiplier
-        }
-        return final_percentage, details
-
-    def _score_soft_skills(self, structured_transcript: dict) -> (float, dict):
-        star_answer = structured_transcript.get("behavioral_question_answer", "")
-        motivation_answer = structured_transcript.get("motivation_question_answer", "")
+        scores = gemini_result.get("scores", {})
+        avg_score_5 = sum(scores.values()) / len(scores) if scores else 0
         
-        star_score_5, _ = self._analyze_star_answer(star_answer)
-        motivation_score_5, _ = self._analyze_motivation_answer(motivation_answer)
-        
-        star_score_pct = (star_score_5 / 5) * 100
-        motivation_score_pct = (motivation_score_5 / 5) * 100
+        if gemini_result.get("contradiction_flag", False):
+            avg_score_5 *= 0.7
 
-        final_percentage = (star_score_pct + motivation_score_pct) / 2
+        final_percentage = (avg_score_5 / 5) * 100
+        return final_percentage, gemini_result
 
-        details = {
-            "comment": "Оценка Soft Skills основана на анализе ответов.",
-            "scores": {
-                "star_method": star_score_pct,
-                "motivation": motivation_score_pct
-            }
-        }
-        return final_percentage, details
+    def score(self, transcript_data: dict) -> dict:
+        hard_score_percent, soft_score_percent, hard_details, soft_details = self._score_skills(transcript_data)
+        experience_score_percent, experience_details = self._score_experience(transcript_data)
+        
+        final_score = (hard_score_percent * self.weights['hard_skills'] +
+                       experience_score_percent * self.weights['experience'] +
+                       soft_score_percent * self.weights['soft_skills'])
 
-    def score(self, vacancy_data: dict, resume_data: dict, structured_transcript: dict) -> dict:
-        hard_skills_score, hard_skills_details = self._score_hard_skills(structured_transcript)
-        experience_score, experience_details = self._score_experience(vacancy_data, resume_data, structured_transcript)
-        soft_skills_score, soft_skills_details = self._score_soft_skills(structured_transcript)
-        
-        final_score = (hard_skills_score * self.weights['hard_skills'] +
-                       experience_score * self.weights['experience'] +
-                       soft_skills_score * self.weights['soft_skills'])
-        
-        if final_score >= 75:
-            verdict = "Рекомендован к следующему этапу"
-        elif final_score >= 50:
-            verdict = "Требуется дополнительное рассмотрение"
-        else:
-            verdict = "Не рекомендован"
+        if final_score >= 75: verdict = "Рекомендован к следующему этапу"
+        elif final_score >= 50: verdict = "Требуется дополнительное рассмотрение"
+        else: verdict = "Не рекомендован"
 
         report = {
-            "candidate_name": structured_transcript.get("candidate_name", "N/A"),
+            "candidate_name": transcript_data.get("candidate_name", "Не указано"),
             "final_score_percent": round(final_score, 2),
             "verdict": verdict,
             "breakdown": {
-                "hard_skills": {"score_percent": round(hard_skills_score, 2), **hard_skills_details},
-                "experience": {"score_percent": round(experience_score, 2), **experience_details},
-                "soft_skills": {"score_percent": round(soft_skills_score, 2), **soft_skills_details},
+                "hard_skills": {"score_percent": round(hard_score_percent, 2), "details": hard_details},
+                "soft_skills": {"score_percent": round(soft_score_percent, 2), "details": soft_details},
+                "experience": {"score_percent": round(experience_score_percent, 2), "details": experience_details}
             }
         }
         return report
 
-# --- ПРИМЕР ИСПОЛЬЗОВАНИЯ И ТЕСТИРОВАНИЯ ---
 if __name__ == "__main__":
     base_path = Path(__file__).resolve().parent.parent
     transcript_path = base_path / "mocks" / "ds3" / "transcript_sample.json"
+    prompt_path = base_path / "ds3" / "scoring_prompt.md"
+    exp_prompt_path = base_path / "ds3" / "experience_prompt.md"
     
     try:
         with open(transcript_path, 'r', encoding='utf-8') as f:
             mock_transcript_data = json.load(f)
-    except FileNotFoundError:
-        print(f"Ошибка: Не найден файл с макетом транскрипта: {transcript_path}")
-        mock_transcript_data = {}
+        with open(prompt_path, 'r', encoding='utf-8') as f:
+            scoring_prompt_template = f.read()
+        with open(exp_prompt_path, 'r', encoding='utf-8') as f:
+            experience_prompt_template = f.read()
+    except FileNotFoundError as e:
+        print(f"Ошибка: Не найден файл: {e.filename}")
+        exit()
 
-    mock_vacancy_data = {"required_experience_years": 3}
-    mock_resume_data = {"total_experience_years": 18}
     mock_weights = {"hard_skills": 0.5, "experience": 0.3, "soft_skills": 0.2}
+    prompts = {"scoring": scoring_prompt_template, "experience": experience_prompt_template}
     
-    print("--- Запуск скоринга кандидата ---")
-    scorer = ScoringModel(weights=mock_weights)
-    final_report = scorer.score(
-        vacancy_data=mock_vacancy_data, 
-        resume_data=mock_resume_data, 
-        structured_transcript=mock_transcript_data
-    )
+    print("--- Запуск скоринга кандидата с помощью Gemini ---")
+    scorer = ScoringModelGemini(prompts=prompts, weights=mock_weights)
+    final_report = scorer.score(transcript_data=mock_transcript_data)
 
     print("\n--- Итоговый отчет ---")
     print(json.dumps(final_report, indent=2, ensure_ascii=False))
