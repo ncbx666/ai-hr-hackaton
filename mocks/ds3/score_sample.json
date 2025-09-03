@@ -1,52 +1,34 @@
 {
   "candidate_name": "Сергеев Иван Петрович",
-  "final_score_percent": 80.0,
-  "verdict": "Рекомендован к следующему этапу",
+  "final_score_percent": 0.0,
+  "verdict": "Не рекомендован",
   "breakdown": {
     "hard_skills": {
-      "score_percent": 80.0,
+      "score_percent": 0.0,
       "details": [
         {
           "skill_assessed": "Антифрод",
-          "score": 4,
-          "assessment_comment": "Кандидат описал конкретный пример борьбы с кредитным фродом, указав используемые технологии (FICO Falcon, Neo4j) и количественный результат (снижение просрочки на 5%).  Отсутствует подробное объяснение принятых решений, что немного снижает оценку.",
-          "matched_keywords_from_answer": [
-            "кредитный фрод",
-            "FICO Falcon",
-            "Neo4j",
-            "графовые алгоритмы",
-            "синтетические идентичности"
-          ]
+          "score": 0,
+          "assessment_comment": "Ошибка оценки: 400 User location is not supported for the API use."
         }
       ]
     },
     "soft_skills": {
-      "score_percent": 80.0,
+      "score_percent": 0.0,
       "details": [
         {
           "skill_assessed": "Структурное мышление (STAR)",
-          "score": 4,
-          "assessment_comment": "Кандидат представил конкретный пример, используя технологические детали (скрипт, Zabbix, логи),  четко описал ситуацию, задачу, действия и результат.  Отсутствует лишь явное  развернутое  объяснение  причинно-следственных связей в принятии решений, что немного снижает оценку.",
-          "matched_keywords_from_answer": [
-            "отчеты",
-            "скрипт",
-            "Zabbix",
-            "логи",
-            "диск"
-          ]
+          "score": 0,
+          "assessment_comment": "Ошибка оценки: 400 User location is not supported for the API use."
         }
       ]
     },
     "experience": {
-      "score_percent": 80.0,
+      "score_percent": 0.0,
       "details": {
-        "assessment_comment": "Кандидат обладает значительным опытом работы (18 лет), что значительно превышает требуемые 3 года.  Опыт работы в Raiffeisenbank, описанный в ответе, демонстрирует навыки в автоматизации проверок кредитных заявок с использованием системы FICO Falcon, что косвенно подтверждает знание антифрод-систем.  Описание задач (моделирование бизнес-правил, тестирование, демонстрация функционала) частично соответствует требованиям вакансии, особенно в части анализа и формирования бизнес-требований.  Однако,  прямого упоминания работы с СУБД и навыков разработки технической документации в ответе нет.  Необходимо уточнить наличие этих навыков.",
-        "scores": {
-          "duration_score_5": 5,
-          "industry_relevance_score_5": 4,
-          "functional_relevance_score_5": 3
-        },
-        "contradiction_flag": false
+        "skill_assessed": "Experience",
+        "score": 0,
+        "assessment_comment": "Ошибка оценки: 400 User location is not supported for the API use."
       }
     }
   }
