@@ -2,46 +2,67 @@ import React, { useState } from 'react';
 import './CreateInterview.css';
 
 const CreateInterview: React.FC = () => {
-  const [jobDescription, setJobDescription] = useState<File | null>(null);
-  const [resume, setResume] = useState<File | null>(null);
-  const [candidateName, setCandidateName] = useState('');
+  const [jobDescriptions, setJobDescriptions] = useState<File[]>([]);
+  const [resumes, setResumes] = useState<File[]>([]);
   const [position, setPosition] = useState('');
   const [loading, setLoading] = useState(false);
   const [generatedLink, setGeneratedLink] = useState('');
 
   const handleJobDescriptionUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setJobDescription(file);
+    const files = event.target.files;
+    if (files) {
+      setJobDescriptions(Array.from(files));
     }
   };
 
   const handleResumeUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setResume(file);
+    const files = event.target.files;
+    if (files) {
+      setResumes(Array.from(files));
     }
+  } 
+
+  const uploadFiles = async (files: File[]) => {
+    const formData = new FormData();
+    files.forEach(file => formData.append('files', file));
+    const response = await fetch('/api/hr/upload-multi', {
+      method: 'POST',
+      body: formData
+    });
+    if (!response.ok) throw new Error('Ошибка загрузки файлов');
+    const data = await response.json();
+    return data.files;
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
-    if (!jobDescription || !resume || !candidateName || !position) {
+    if (jobDescriptions.length === 0 || resumes.length === 0 || !position) {
       alert('Пожалуйста, заполните все поля');
       return;
     }
-
     setLoading(true);
-
     try {
-      // Имитация создания собеседования
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      // Загружаем вакансии
+      const jobDescLinks = await uploadFiles(jobDescriptions);
+      // Загружаем резюме
+      const resumeLinks = await uploadFiles(resumes);
+      // Формируем данные для API создания собеседования
+      const interviewData = {
+        position,
+        job_description: jobDescLinks.map((f: { url: string }) => f.url).join(', '),
+        resumes: resumeLinks.map((f: { filename: string; url: string }) => ({ filename: f.filename, url: f.url }))
+      };
+      // Отправляем запрос на создание собеседования
+      const resp = await fetch('/api/hr/interviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(interviewData)
+      });
+      if (!resp.ok) throw new Error('Ошибка создания собеседования');
+      const result = await resp.json();
       // Генерация уникальной ссылки
-      const sessionId = Math.random().toString(36).substring(2, 15);
-      const link = `${window.location.origin}/candidate/${sessionId}/welcome`;
+      const link = `${window.location.origin}/candidate/${result.id}/welcome`;
       setGeneratedLink(link);
-      
     } catch (error) {
       alert('Ошибка при создании собеседования');
     } finally {
@@ -55,9 +76,8 @@ const CreateInterview: React.FC = () => {
   };
 
   const resetForm = () => {
-    setJobDescription(null);
-    setResume(null);
-    setCandidateName('');
+    setJobDescriptions([]);
+    setResumes([]);
     setPosition('');
     setGeneratedLink('');
   };
@@ -115,7 +135,6 @@ const CreateInterview: React.FC = () => {
       <form onSubmit={handleSubmit} className="interview-form">
         <div className="form-section">
           <h2>Информация о позиции</h2>
-          
           <div className="form-group">
             <label htmlFor="position">Название позиции:</label>
             <input
@@ -127,54 +146,50 @@ const CreateInterview: React.FC = () => {
               required
             />
           </div>
-
-          <div className="form-group">
-            <label htmlFor="candidateName">Имя кандидата:</label>
-            <input
-              type="text"
-              id="candidateName"
-              value={candidateName}
-              onChange={(e) => setCandidateName(e.target.value)}
-              placeholder="Например: Иванов Иван Иванович"
-              required
-            />
-          </div>
         </div>
 
         <div className="form-section">
           <h2>Загрузка файлов</h2>
-          
           <div className="form-group">
-            <label htmlFor="jobDescription">Описание вакансии:</label>
+            <label htmlFor="jobDescriptions">Описание вакансии (можно несколько):</label>
             <div className="file-upload">
               <input
                 type="file"
-                id="jobDescription"
+                id="jobDescriptions"
                 onChange={handleJobDescriptionUpload}
                 accept=".pdf,.doc,.docx,.txt"
+                multiple
                 required
               />
-              {jobDescription && (
+              {jobDescriptions.length > 0 && (
                 <div className="file-info">
-                  ✓ Загружен: {jobDescription.name}
+                  <ul>
+                    {jobDescriptions.map((file, idx) => (
+                      <li key={idx}>✓ {file.name}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>
           </div>
-
           <div className="form-group">
-            <label htmlFor="resume">Резюме пользователя:</label>
+            <label htmlFor="resumes">Резюме кандидатов (можно несколько):</label>
             <div className="file-upload">
               <input
                 type="file"
-                id="resume"
+                id="resumes"
                 onChange={handleResumeUpload}
                 accept=".pdf,.doc,.docx,.txt"
+                multiple
                 required
               />
-              {resume && (
+              {resumes.length > 0 && (
                 <div className="file-info">
-                  ✓ Загружено: {resume.name}
+                  <ul>
+                    {resumes.map((file, idx) => (
+                      <li key={idx}>✓ {file.name}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>
