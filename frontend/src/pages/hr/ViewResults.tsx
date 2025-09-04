@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 import './ViewResults.css';
 
 interface ScoreDetails {
@@ -110,7 +111,43 @@ const ViewResults: React.FC = () => {
   };
 
   const exportToExcel = () => {
-    alert('Экспорт в Excel (функция будет реализована в backend)');
+    if (!results) return;
+    // Формируем данные для экспорта
+    const data = [
+      {
+        'Кандидат': results.candidate_name,
+        'Общий балл (%)': results.final_score_percent,
+        'Вердикт': results.verdict,
+      },
+      ...results.breakdown.hard_skills.details.map(skill => ({
+        'Навык': skill.skill,
+        'Оценка': skill.score,
+        'Комментарий': skill.comment
+      })),
+      {
+        'Опыт работы (%)': results.breakdown.experience.score_percent,
+        'Комментарий': results.breakdown.experience.comment,
+        'Продолжительность (%)': results.breakdown.experience.scores.duration,
+        'Релевантность (%)': results.breakdown.experience.scores.relevance,
+        'Функциональность (%)': results.breakdown.experience.scores.functionality
+      },
+      {
+        'Soft Skills (%)': results.breakdown.soft_skills.score_percent,
+        'Комментарий': results.breakdown.soft_skills.comment,
+        'STAR метод (%)': results.breakdown.soft_skills.scores.star_method,
+        'Мотивация (%)': results.breakdown.soft_skills.scores.motivation
+      }
+    ];
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Результаты');
+    XLSX.writeFile(workbook, 'interview_results.xlsx');
+  };
+
+  // Ссылка на Google Sheets (заглушка, заменить на реальную при интеграции)
+  const googleSheetsUrl = 'https://docs.google.com/spreadsheets/d/your-sheet-id';
+  const openGoogleSheets = () => {
+    window.open(googleSheetsUrl, '_blank');
   };
 
   if (loading) {
@@ -142,6 +179,9 @@ const ViewResults: React.FC = () => {
           </button>
           <button onClick={exportToExcel} className="export-btn">
             Экспорт в Excel
+          </button>
+          <button onClick={openGoogleSheets} className="export-btn">
+            Открыть Google Sheets
           </button>
           <button 
             onClick={() => window.location.href = '/hr/dashboard'}

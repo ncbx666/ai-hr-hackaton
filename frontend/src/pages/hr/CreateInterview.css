@@ -17,21 +17,35 @@
 }
 
 .back-btn {
-  background-color: #95a5a6;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background-color 0.3s ease;
+/* Красивый современный спиннер */
+.loading-spinner {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #3498db 10%,
+    #e0e0e0 10% 100%
+  );
+  animation: spinner-rotate 1s linear infinite;
+  position: relative;
+  margin: 0 auto;
 }
 
-.back-btn:hover {
-  background-color: #7f8c8d;
+.loading-spinner::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 40px;
+  height: 40px;
+  background: #fff;
+  border-radius: 50%;
 }
 
-.interview-form {
+@keyframes spinner-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
   background: white;
   padding: 30px;
   border-radius: 8px;
