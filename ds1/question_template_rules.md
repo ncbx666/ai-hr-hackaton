@@ -1,0 +1,4 @@
+- Каждый навык из JD превращается в 1-2 вопроса
+- Обязанности — в ситуационные вопросы
+- responsibility → case question
+- skill → skill question
