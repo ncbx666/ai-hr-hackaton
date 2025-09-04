@@ -17,7 +17,7 @@ class ScoringModelGemini:
         self.prompts = prompts
         self.weights = weights
         self.model = genai.GenerativeModel(
-            'gemini-1.5-flash-latest',
+            'gemini-2.5-flash-preview-05-20',
             generation_config={"temperature": 0, "top_p": 0.1}
         )
 
@@ -33,7 +33,7 @@ class ScoringModelGemini:
                 print(f"!!! Ответ от Gemini, который не удалось распарсить: {response.text}")
             return {"skill_assessed": skill_name, "score": 0, "assessment_comment": f"Ошибка оценки: {e}"}
 
-    def _score_skills(self, transcript_data: dict) -> (float, float, list, list):
+    def _score_skills(self, transcript_data: dict) -> tuple[float, float, list, list]:
         assessments = {"hard_skill": [], "soft_skill": []}
         dialogue_parts = transcript_data.get("dialogue_parts", [])
 
@@ -59,7 +59,7 @@ class ScoringModelGemini:
         
         return hard_score_percent, soft_score_percent, assessments["hard_skill"], assessments["soft_skill"]
 
-    def _score_experience(self, transcript_data: dict) -> (float, dict):
+    def _score_experience(self, transcript_data: dict) -> tuple[float, dict]:
         print("-> Оцениваю опыт кандидата...")
         
         # Используем ручную замену вместо .format()
@@ -104,7 +104,7 @@ class ScoringModelGemini:
 
 if __name__ == "__main__":
     base_path = Path(__file__).resolve().parent.parent
-    transcript_path = base_path / "mocks" / "ds3" / "transcript_sample.json"
+    transcript_path = base_path / "mocks" / "ds2" / "transcript_output.json"
     prompt_path = base_path / "ds3" / "scoring_prompt.md"
     exp_prompt_path = base_path / "ds3" / "experience_prompt.md"
     
@@ -124,6 +124,10 @@ if __name__ == "__main__":
     
     print("--- Запуск скоринга кандидата с помощью Gemini ---")
     scorer = ScoringModelGemini(prompts=prompts, weights=mock_weights)
+    # Проверяем наличие ключей resume_info и vacancy_info
+    if not mock_transcript_data.get("resume_info") or not mock_transcript_data.get("vacancy_info"):
+        print("Ошибка: Входные данные должны содержать resume_info и vacancy_info, соответствующие текущим парсерам.")
+        exit()
     final_report = scorer.score(transcript_data=mock_transcript_data)
 
     print("\n--- Итоговый отчет ---")
