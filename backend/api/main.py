@@ -1,7 +1,14 @@
+# Модель резюме для InterviewCreate
+from pydantic import BaseModel
+
+class ResumeInfo(BaseModel):
+    filename: str
+    url: str
 from google_sheets import write_result_to_sheet
 import subprocess
 import tempfile
 from fastapi import FastAPI, UploadFile, File, WebSocket, WebSocketDisconnect, Depends
+from fastapi.middleware.cors import CORSMiddleware
 import json
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -16,7 +23,56 @@ import os
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+
+
 app = FastAPI()
+
+# CORS settings
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
+# Импорт и обработчики ошибок строго после app = FastAPI()
+from fastapi.requests import Request
+from fastapi.responses import JSONResponse
+from fastapi.exception_handlers import RequestValidationError
+from fastapi.exceptions import RequestValidationError as RVError
+import traceback
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    print("[GLOBAL ERROR] Exception:", exc)
+    traceback.print_exc()
+    return JSONResponse(status_code=500, content={"detail": str(exc)})
+
+@app.exception_handler(RVError)
+async def validation_exception_handler(request: Request, exc: RVError):
+    print("[GLOBAL ERROR] ValidationError:", exc)
+    traceback.print_exc()
+    return JSONResponse(status_code=422, content={"detail": exc.errors()})
+
+# Глобальный обработчик ошибок
+from fastapi.requests import Request
+from fastapi.responses import JSONResponse
+from fastapi.exception_handlers import RequestValidationError
+from fastapi.exceptions import RequestValidationError as RVError
+import traceback
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    print("[GLOBAL ERROR] Exception:", exc)
+    traceback.print_exc()
+    return JSONResponse(status_code=500, content={"detail": str(exc)})
+
+@app.exception_handler(RVError)
+async def validation_exception_handler(request: Request, exc: RVError):
+    print("[GLOBAL ERROR] ValidationError:", exc)
+    traceback.print_exc()
+    return JSONResponse(status_code=422, content={"detail": exc.errors()})
 
 def get_db():
     db = SessionLocal()
@@ -47,35 +103,44 @@ class Interview(BaseModel):
 
 @app.post("/api/hr/interviews", response_model=Interview)
 def create_interview(data: InterviewCreate, db: Session = Depends(get_db)):
-    interview_id = str(uuid.uuid4())
-    interview_db = InterviewDB(
-        id=interview_id,
-        position=data.position,
-        job_description=data.job_description,
-        status="created",
-        results_url=None
-    )
-    db.add(interview_db)
-    db.commit()
-    db.refresh(interview_db)
-    resumes_out = []
-    for resume in data.resumes:
-        resume_db = ResumeDB(
-            filename=resume.filename,
-            url=resume.url,
-            interview_id=interview_id
+    print('create_interview called')
+    print("[DEBUG] /api/hr/interviews payload:", data)
+    try:
+        interview_id = str(uuid.uuid4())
+        interview_db = InterviewDB(
+            id=interview_id,
+            position=data.position,
+            job_description=data.job_description,
+            status="created",
+            results_url=None
         )
-        db.add(resume_db)
-        resumes_out.append(resume)
-    db.commit()
-    return Interview(
-        id=interview_db.id,
-        position=interview_db.position,
-        job_description=interview_db.job_description,
-        resumes=resumes_out,
-        status=interview_db.status,
-        results_url=interview_db.results_url
-    )
+        db.add(interview_db)
+        db.commit()
+        db.refresh(interview_db)
+        resumes_out = []
+        for resume in data.resumes:
+            resume_db = ResumeDB(
+                filename=resume.filename,
+                url=resume.url,
+                interview_id=interview_id
+            )
+            db.add(resume_db)
+            resumes_out.append(resume)
+        db.commit()
+        return Interview(
+            id=interview_db.id,
+            position=interview_db.position,
+            job_description=interview_db.job_description,
+            resumes=resumes_out,
+            status=interview_db.status,
+            results_url=interview_db.results_url
+        )
+    except Exception as e:
+        import traceback
+        print("[ERROR] /api/hr/interviews:", e)
+        traceback.print_exc()
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/hr/interviews", response_model=List[Interview])
 def list_interviews(db: Session = Depends(get_db)):
@@ -126,17 +191,25 @@ async def interview_ws(websocket: WebSocket, session_id: str):
 # Множественная загрузка файлов
 @app.post("/api/hr/upload-multi")
 async def upload_files(files: List[UploadFile] = File(...)):
-    result = []
-    for file in files:
-        file_location = os.path.join(UPLOAD_DIR, file.filename)
-        with open(file_location, "wb") as f:
-            content = await file.read()
-            f.write(content)
-        result.append({
-            "filename": file.filename,
-            "url": f"/api/hr/file/{file.filename}"
-        })
-    return {"files": result}
+    try:
+        print("[DEBUG] upload-multi files:", [file.filename for file in files])
+        result = []
+        for file in files:
+            file_location = os.path.join(UPLOAD_DIR, file.filename)
+            with open(file_location, "wb") as f:
+                content = await file.read()
+                f.write(content)
+            result.append({
+                "filename": file.filename,
+                "url": f"/api/hr/file/{file.filename}"
+            })
+        return {"files": result}
+    except Exception as e:
+        import traceback
+        print("[ERROR] /api/hr/upload-multi:", e)
+        traceback.print_exc()
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/hr/file/{filename}")
 def get_uploaded_file(filename: str):
