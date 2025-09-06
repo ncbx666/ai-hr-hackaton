@@ -25,7 +25,7 @@ const CreateInterview: React.FC = () => {
   const uploadFiles = async (files: File[]) => {
     const formData = new FormData();
     files.forEach(file => formData.append('files', file));
-    const response = await fetch('/api/hr/upload-multi', {
+  const response = await fetch('http://localhost:8000/api/hr/upload-multi', {
       method: 'POST',
       body: formData
     });
@@ -53,7 +53,7 @@ const CreateInterview: React.FC = () => {
         resumes: resumeLinks.map((f: { filename: string; url: string }) => ({ filename: f.filename, url: f.url }))
       };
       // Отправляем запрос на создание собеседования
-      const resp = await fetch('/api/hr/interviews', {
+  const resp = await fetch('http://localhost:8000/api/hr/interviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(interviewData)
@@ -210,7 +210,7 @@ const CreateInterview: React.FC = () => {
       {loading && (
         <div className="loading-overlay">
           <div className="loading-spinner">
-            <p>Обрабатываем файлы и создаём собеседование...</p>
+            <div className="custom-spinner"></div>
           </div>
         </div>
       )}

@@ -10,7 +10,7 @@ creds = ServiceAccountCredentials.from_json_keyfile_name('google-credentials.jso
 client = gspread.authorize(creds)
 
 # ID таблицы (замени на свой)
-SPREADSHEET_ID = 'your-google-sheet-id'
+SPREADSHEET_ID = '1e0T4eh4vx9hzXdXffs3f6I-ktaVhmwvW7O5Ls31w7Ac'
 
 # Запись строки с результатами
 def write_result_to_sheet(data: dict):
