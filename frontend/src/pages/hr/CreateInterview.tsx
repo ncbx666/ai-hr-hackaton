@@ -70,9 +70,33 @@ const CreateInterview: React.FC = () => {
     }
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(generatedLink);
-    alert('Ссылка скопирована в буфер обмена!');
+  const copyToClipboard = async () => {
+    try {
+      // Попробуем современный Clipboard API
+      await navigator.clipboard.writeText(generatedLink);
+      alert('Ссылка скопирована в буфер обмена!');
+    } catch (error) {
+      // Fallback: используем старый метод через временное текстовое поле
+      const textArea = document.createElement('textarea');
+      textArea.value = generatedLink;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        document.execCommand('copy');
+        alert('Ссылка скопирована в буфер обмена!');
+      } catch (execError) {
+        console.error('Ошибка копирования:', execError);
+        // Показываем ссылку для ручного копирования
+        prompt('Скопируйте ссылку вручную:', generatedLink);
+      } finally {
+        document.body.removeChild(textArea);
+      }
+    }
   };
 
   const resetForm = () => {

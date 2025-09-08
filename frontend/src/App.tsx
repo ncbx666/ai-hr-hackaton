@@ -13,7 +13,11 @@ import Welcome from './pages/candidate/Welcome';
 import Registration from './pages/candidate/Registration';
 import Waiting from './pages/candidate/Waiting';
 import Interview from './pages/candidate/Interview';
+import InterviewSimple from './pages/candidate/InterviewSimple';
 import Completion from './pages/candidate/Completion';
+
+// Test Components
+import MicrophoneTest from './components/MicrophoneTest';
 
 function App() {
   return (
@@ -29,11 +33,15 @@ function App() {
           <Route path="/hr/results" element={<ViewResults />} />
           <Route path="/hr/requirements/:id" element={<ViewRequirements />} />
           
+          {/* Test Routes */}
+          <Route path="/test/microphone" element={<MicrophoneTest />} />
+          
           {/* Candidate Routes */}
           <Route path="/candidate/:sessionId/welcome" element={<Welcome />} />
           <Route path="/candidate/:sessionId/registration" element={<Registration />} />
           <Route path="/candidate/:sessionId/waiting" element={<Waiting />} />
-          <Route path="/candidate/:sessionId/interview" element={<Interview />} />
+          <Route path="/candidate/:sessionId/interview" element={<InterviewSimple />} />
+          <Route path="/candidate/:sessionId/interview-full" element={<Interview />} />
           <Route path="/candidate/:sessionId/completion" element={<Completion />} />
         </Routes>
       </div>
