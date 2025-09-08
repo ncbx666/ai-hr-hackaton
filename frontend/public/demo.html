@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Демо AI-HR Система</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .demo-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        .demo-button {
+            padding: 15px 25px;
+            font-size: 16px;
+            margin: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        .demo-primary { background: #007bff; color: white; }
+        .demo-primary:hover { background: #0056b3; transform: translateY(-2px); }
+        .demo-success { background: #28a745; color: white; }
+        .demo-success:hover { background: #218838; transform: translateY(-2px); }
+        .demo-warning { background: #ffc107; color: #212529; }
+        .demo-warning:hover { background: #e0a800; transform: translateY(-2px); }
+        .flow-diagram {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+        }
+        .flow-step {
+            text-align: center;
+            flex: 1;
+            padding: 10px;
+        }
+        .flow-arrow {
+            font-size: 24px;
+            color: #007bff;
+        }
+        .status-section {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        h1, h2, h3 { color: #333; }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .feature-list li:before {
+            content: "✅ ";
+            color: #28a745;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 AI-HR Система - Полная Демонстрация</h1>
+        
+        <div class="status-section">
+            <h3>📊 Статус системы:</h3>
+            <p><strong>Frontend:</strong> <span id="frontend-status">Проверка...</span></p>
+            <p><strong>Backend:</strong> <span id="backend-status">Проверка...</span></p>
+            <p><strong>WebSocket:</strong> <span id="websocket-status">Готов к подключению</span></p>
+        </div>
+
+        <div class="demo-section">
+            <h2>🔄 Автоматический процесс интервью</h2>
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <h4>1. Интервью</h4>
+                    <p>Кандидат отвечает на вопросы</p>
+                </div>
+                <div class="flow-arrow">➡️</div>
+                <div class="flow-step">
+                    <h4>2. Транскрипт</h4>
+                    <p>Автоматическое создание</p>
+                </div>
+                <div class="flow-arrow">➡️</div>
+                <div class="flow-step">
+                    <h4>3. Скоринг</h4>
+                    <p>ML оценка кандидата</p>
+                </div>
+                <div class="flow-arrow">➡️</div>
+                <div class="flow-step">
+                    <h4>4. Результаты</h4>
+                    <p>Готовый отчет</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🚀 Запуск демонстрации</h2>
+            <p>Выберите способ тестирования системы:</p>
+            
+            <a href="http://localhost:3000/candidate/demo123/interview-full" 
+               class="demo-button demo-primary" target="_blank">
+                🎤 Полное интервью (WebSocket + Автообработка)
+            </a>
+            
+            <a href="http://localhost:3000/candidate/demo123/interview" 
+               class="demo-button demo-success" target="_blank">
+                🧪 Простое тестирование микрофона
+            </a>
+            
+            <a href="http://localhost:3000/hr/dashboard" 
+               class="demo-button demo-warning" target="_blank">
+                👔 HR Панель управления
+            </a>
+        </div>
+
+        <div class="demo-section">
+            <h2>✨ Реализованные возможности</h2>
+            <ul class="feature-list">
+                <li>WebSocket соединение для реального времени</li>
+                <li>Автоматическое распознавание речи (STT)</li>
+                <li>Генерация вопросов через AI</li>
+                <li>Синтез речи для вопросов (TTS)</li>
+                <li>Автоматическое создание транскрипта после интервью</li>
+                <li>Автоматический скоринг через ML модели</li>
+                <li>Запись результатов в Google Sheets</li>
+                <li>Удобный интерфейс для кандидатов и HR</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h2>🛠️ API эндпоинты</h2>
+            <p>Доступные API для интеграции:</p>
+            <ul>
+                <li><code>GET /api/interview/{session_id}/results</code> - Получить результаты обработки</li>
+                <li><code>POST /api/hr/score</code> - Ручной запуск скоринга</li>
+                <li><code>WebSocket /ws/interview/{session_id}</code> - Интервью в реальном времени</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h2>📝 Инструкция по тестированию</h2>
+            <ol>
+                <li><strong>Настройте микрофон:</strong> Разрешите доступ к микрофону в браузере</li>
+                <li><strong>Запустите интервью:</strong> Нажмите "Полное интервью"</li>
+                <li><strong>Введите имя:</strong> Представьтесь системе</li>
+                <li><strong>Отвечайте на вопросы:</strong> Говорите в микрофон, система генерирует новые вопросы</li>
+                <li><strong>Завершите интервью:</strong> Нажмите "Завершить интервью"</li>
+                <li><strong>Получите результаты:</strong> Система автоматически создаст транскрипт и оценки</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Проверка статуса сервисов
+        async function checkStatus() {
+            // Проверка Frontend
+            try {
+                const frontendResponse = await fetch('http://localhost:3000');
+                document.getElementById('frontend-status').textContent = '✅ Работает';
+                document.getElementById('frontend-status').style.color = 'green';
+            } catch (e) {
+                document.getElementById('frontend-status').textContent = '❌ Не доступен';
+                document.getElementById('frontend-status').style.color = 'red';
+            }
+
+            // Проверка Backend
+            try {
+                const backendResponse = await fetch('http://localhost:8000');
+                document.getElementById('backend-status').textContent = '✅ Работает';
+                document.getElementById('backend-status').style.color = 'green';
+            } catch (e) {
+                document.getElementById('backend-status').textContent = '❌ Не доступен';
+                document.getElementById('backend-status').style.color = 'red';
+            }
+        }
+
+        // Запускаем проверку при загрузке страницы
+        window.onload = checkStatus;
+    </script>
+</body>
+</html>
