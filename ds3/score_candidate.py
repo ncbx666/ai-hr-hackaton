@@ -17,7 +17,7 @@ class ScoringModelGemini:
         self.prompts = prompts
         self.weights = weights
         self.model = genai.GenerativeModel(
-            'gemini-2.5-flash-preview-05-20',
+            'gemini-1.5-pro-latest',
             generation_config={"temperature": 0, "top_p": 0.1}
         )
 
