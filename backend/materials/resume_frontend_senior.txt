@@ -1,0 +1,76 @@
+РЕЗЮМЕ
+
+ФИО: Петров Алексей Владимирович
+Дата рождения: 15.03.1992 (31 год)
+Город: Москва
+Телефон: +7 (999) 123-45-67
+Email: petrov.alexey@email.com
+LinkedIn: linkedin.com/in/petrov-alexey
+GitHub: github.com/petrov-alexey
+
+ЖЕЛАЕМАЯ ПОЗИЦИЯ: Senior Frontend Developer
+
+ОПЫТ РАБОТЫ:
+
+2021 - настоящее время | Senior Frontend Developer | TechStart LLC
+• Разработка SPA на React с использованием TypeScript
+• Создание компонентной библиотеки для команды из 8 разработчиков
+• Интеграция с REST API и GraphQL
+• Внедрение best practices по code review и тестированию
+• Менторинг 2 junior разработчиков
+• Оптимизация производительности - ускорение загрузки на 40%
+
+Технологии: React, TypeScript, Redux Toolkit, React Query, Material-UI, Jest, React Testing Library
+
+2019 - 2021 | Middle Frontend Developer | WebSolutions Inc
+• Разработка корпоративных веб-приложений на React
+• Участие в миграции legacy кода с jQuery на React
+• Создание адаптивных интерфейсов с поддержкой mobile-first
+• Интеграция с backend через REST API
+• Написание unit тестов с покрытием 85%
+
+Технологии: React, JavaScript (ES6+), Redux, CSS3, SASS, Webpack, Babel
+
+2018 - 2019 | Junior Frontend Developer | StartupHub
+• Верстка макетов по дизайну в Figma
+• Разработка лендингов и небольших веб-приложений
+• Изучение React и современных frontend технологий
+• Участие в agile процессах
+
+Технологии: HTML5, CSS3, JavaScript, Bootstrap, jQuery, Gulp
+
+ОБРАЗОВАНИЕ:
+2014 - 2018 | Бакалавр, Информационные технологии
+Московский государственный технический университет им. Н.Э. Баумана
+Диплом с отличием
+
+ТЕХНИЧЕСКИЕ НАВЫКИ:
+Frontend: React, TypeScript, JavaScript (ES6+), HTML5, CSS3
+State Management: Redux, Redux Toolkit, Zustand, React Query
+Styling: CSS Modules, Styled Components, Material-UI, Ant Design, SASS
+Testing: Jest, React Testing Library, Cypress
+Tools: Webpack, Vite, ESLint, Prettier, Git, GitHub Actions
+API: REST, GraphQL, WebSocket
+
+ДОПОЛНИТЕЛЬНЫЕ НАВЫКИ:
+• Node.js (базовый уровень)
+• Docker (контейнеризация frontend приложений)
+• Figma (работа с дизайн-макетами)
+• Agile/Scrum методологии
+
+ЯЗЫКИ:
+• Русский (родной)
+• Английский (Upper-Intermediate - B2)
+
+ДОСТИЖЕНИЯ:
+• Лучший разработчик месяца в TechStart LLC (3 раза)
+• Выступление с докладом на FrontendConf 2022
+• Contribution в open-source проекты (React DevTools)
+• Ментор в программе для junior разработчиков
+
+ЛИЧНЫЕ КАЧЕСТВА:
+• Аналитическое мышление
+• Ответственность и пунктуальность
+• Стремление к изучению новых технологий
+• Коммуникабельность
+• Готовность помогать коллегам

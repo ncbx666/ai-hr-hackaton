@@ -15,6 +15,23 @@ const HRDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    loadInterviews();
+  }, []);
+
+  const loadInterviews = async () => {
+    try {
+      // Пытаемся загрузить реальные интервью из API
+      const response = await fetch('http://localhost:8000/api/hr/interviews');
+      if (response.ok) {
+        const data = await response.json();
+        setInterviews(data);
+        setLoading(false);
+        return;
+      }
+    } catch (error) {
+      console.warn('Не удалось загрузить реальные интервью, используем demo данные');
+    }
+
     // Заглушка для демонстрации
     const mockInterviews: Interview[] = [
       {
@@ -38,7 +55,7 @@ const HRDashboard: React.FC = () => {
       setInterviews(mockInterviews);
       setLoading(false);
     }, 1000);
-  }, []);
+  };
 
   const getStatusText = (status: string) => {
     switch (status) {
@@ -69,17 +86,72 @@ const HRDashboard: React.FC = () => {
   return (
     <div className="hr-dashboard">
       <div className="dashboard-header">
-        <h1>Панель HR - Управление собеседованиями</h1>
-        <button 
-          className="create-btn"
-          onClick={() => window.location.href = '/hr/create'}
-        >
-          Создать новое собеседование
-        </button>
+        <h1>HR Панель</h1>
+        <div className="navigation-buttons">
+          <button 
+            className="nav-btn active"
+            onClick={() => window.location.href = '/hr/dashboard'}
+          >
+            Главная
+          </button>
+          <button 
+            className="nav-btn"
+            onClick={() => window.location.href = '/hr/create'}
+          >
+            Создать собеседование
+          </button>
+          <button 
+            className="nav-btn"
+            onClick={() => window.location.href = '/hr/results'}
+          >
+            Результаты
+          </button>
+          <button 
+            className="nav-btn"
+            onClick={() => window.location.href = '/test/microphone'}
+          >
+            Тест микрофона
+          </button>
+        </div>
+      </div>
+
+      <div className="main-actions">
+        <div className="action-card">
+          <h3>Создать собеседование</h3>
+          <p>Загрузите вакансию и резюме для генерации вопросов</p>
+          <button 
+            className="action-btn primary"
+            onClick={() => window.location.href = '/hr/create'}
+          >
+            Создать
+          </button>
+        </div>
+        
+        <div className="action-card">
+          <h3>Просмотр результатов</h3>
+          <p>Анализ оценок и результатов собеседований</p>
+          <button 
+            className="action-btn secondary"
+            onClick={() => window.location.href = '/hr/results'}
+          >
+            Открыть
+          </button>
+        </div>
+        
+        <div className="action-card">
+          <h3>Тест микрофона</h3>
+          <p>Проверка работы аудио перед собеседованием</p>
+          <button 
+            className="action-btn secondary"
+            onClick={() => window.location.href = '/test/microphone'}
+          >
+            Тестировать
+          </button>
+        </div>
       </div>
 
       <div className="interviews-list">
-        <h2>Список уже созданных собеседований</h2>
+        <h2>Активные собеседования</h2>
         
         {interviews.length === 0 ? (
           <div className="empty-state">
@@ -121,12 +193,33 @@ const HRDashboard: React.FC = () => {
                     <td>
                       <div className="actions">
                         {interview.status === 'completed' && (
-                          <button 
-                            className="view-results-btn"
-                            onClick={() => window.location.href = '/hr/results'}
-                          >
-                            Просмотр результатов
-                          </button>
+                          <>
+                            <button 
+                              className="view-results-btn"
+                              onClick={() => window.location.href = '/hr/results'}
+                            >
+                              Просмотр результатов
+                            </button>
+                            <button 
+                              className="google-sheets-btn"
+                              onClick={async () => {
+                                try {
+                                  const response = await fetch(`http://localhost:8000/api/hr/results/${interview.id}`);
+                                  if (response.ok) {
+                                    const data = await response.json();
+                                    if (data.results_url) {
+                                      window.open(data.results_url, '_blank');
+                                    }
+                                  }
+                                } catch (error) {
+                                  console.error('Ошибка получения ссылки на Google Sheets:', error);
+                                  window.open(`https://docs.google.com/spreadsheets/d/demo_${interview.id}/edit`, '_blank');
+                                }
+                              }}
+                            >
+                              Google Sheets
+                            </button>
+                          </>
                         )}
                         <button 
                           className="view-requirements-btn"

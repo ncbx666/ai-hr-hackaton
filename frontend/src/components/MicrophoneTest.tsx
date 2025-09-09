@@ -78,8 +78,103 @@ const MicrophoneTest: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h2>🎤 Тест микрофона</h2>
+    <div style={{ 
+      padding: '20px', 
+      fontFamily: 'Arial, sans-serif',
+      backgroundColor: '#f8f9fa',
+      minHeight: '100vh'
+    }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '30px',
+        background: 'white',
+        padding: '20px',
+        borderRadius: '12px',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
+      }}>
+        <h1 style={{ 
+          color: '#2c3e50', 
+          margin: 0,
+          fontSize: '28px',
+          fontWeight: 600 
+        }}>🎤 Тест микрофона</h1>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button 
+            onClick={() => window.location.href = '/hr/dashboard'}
+            style={{
+              backgroundColor: '#ecf0f1',
+              color: '#34495e',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 500,
+              transition: 'all 0.3s ease'
+            }}
+          >
+            Главная
+          </button>
+          <button 
+            onClick={() => window.location.href = '/hr/create'}
+            style={{
+              backgroundColor: '#ecf0f1',
+              color: '#34495e',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 500,
+              transition: 'all 0.3s ease'
+            }}
+          >
+            Создать собеседование
+          </button>
+          <button 
+            onClick={() => window.location.href = '/hr/results'}
+            style={{
+              backgroundColor: '#ecf0f1',
+              color: '#34495e',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 500,
+              transition: 'all 0.3s ease'
+            }}
+          >
+            Результаты
+          </button>
+          <button 
+            onClick={() => window.location.href = '/test/microphone'}
+            style={{
+              backgroundColor: '#3498db',
+              color: 'white',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 500,
+              transition: 'all 0.3s ease'
+            }}
+          >
+            Тест микрофона
+          </button>
+        </div>
+      </div>
+      
+      <div style={{
+        background: 'white',
+        padding: '30px',
+        borderRadius: '12px',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
+      }}>
+        <h2>🎤 Тест микрофона</h2>
       
       <div style={{ 
         margin: '20px 0', 
@@ -152,6 +247,8 @@ const MicrophoneTest: React.FC = () => {
           <li>Нажмите "Остановить запись"</li>
           <li>Нажмите "Воспроизвести" чтобы услышать запись</li>
         </ol>
+      </div>
+      
       </div>
     </div>
   );
