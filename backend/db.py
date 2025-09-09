@@ -5,7 +5,7 @@ from datetime import datetime
 import os
 
 # URL базы данных
-DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://hr_user:hr_password@localhost:5432/hr_interview_db')
+DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///./ai_hr_hackaton.db')
 
 # Создание движка SQLAlchemy
 engine = create_engine(DATABASE_URL)

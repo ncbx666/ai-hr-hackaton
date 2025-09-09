@@ -1,0 +1,96 @@
+РЕЗЮМЕ
+
+ФИО: Козлов Дмитрий Андреевич
+Дата рождения: 10.11.1998 (25 лет)
+Город: Москва
+Телефон: +7 (915) 456-78-90
+Email: kozlov.dmitry@email.com
+GitHub: github.com/dmitry-kozlov
+Portfolio: kozlov-portfolio.dev
+
+ЖЕЛАЕМАЯ ПОЗИЦИЯ: Frontend Developer (React)
+
+ОПЫТ РАБОТЫ:
+
+2022 - настоящее время | Frontend Developer | DigitalAgency Pro
+• Разработка интерактивных веб-приложений на React
+• Создание адаптивных лендингов и корпоративных сайтов
+• Интеграция с CMS и внешними API
+• Оптимизация производительности и SEO
+• Кроссбраузерная совместимость
+
+Технологии: React, JavaScript, TypeScript, Next.js, Styled Components, Figma
+
+2021 - 2022 | Junior Frontend Developer | WebStudio Creative
+• Верстка макетов в соответствии с дизайном
+• Разработка интерактивных элементов на JavaScript
+• Адаптация сайтов под мобильные устройства
+• Поддержка существующих проектов
+
+Технологии: HTML5, CSS3, JavaScript, jQuery, Bootstrap, SASS
+
+2020 - 2021 | Freelance Frontend Developer
+• Создание лендингов для малого бизнеса
+• Разработка простых веб-приложений
+• Изучение современных frontend технологий
+
+ОБРАЗОВАНИЕ:
+2020 - 2024 | Бакалавр, Информационные системы и технологии
+Российский государственный гуманитарный университет
+Текущий средний балл: 4.3/5.0
+
+ДОПОЛНИТЕЛЬНОЕ ОБРАЗОВАНИЕ:
+• 2023 | React.js - Полный курс (Udemy)
+• 2022 | JavaScript - Продвинутый уровень (Skillbox)
+• 2021 | Основы веб-разработки (HTML Academy)
+
+ТЕХНИЧЕСКИЕ НАВЫКИ:
+Frontend: React, JavaScript (ES6+), TypeScript, HTML5, CSS3
+Styling: CSS Modules, Styled Components, SASS, Bootstrap, Tailwind CSS
+Tools: Webpack, Vite, npm/yarn, Git, GitHub
+Design: Figma, Adobe Photoshop (базовый)
+Testing: Jest (изучаю)
+
+ПРОЕКТЫ:
+
+1. React Todo App с авторизацией
+   • React + TypeScript + Local Storage
+   • Responsive дизайн
+   • GitHub: github.com/dmitry-kozlov/react-todo
+
+2. Корпоративный сайт для IT-компании
+   • Next.js + TypeScript
+   • Интеграция с headless CMS Strapi
+   • Оптимизация для SEO
+
+3. Интернет-магазин (учебный проект)
+   • React + Redux
+   • Fake Store API для данных
+   • Корзина покупок и фильтрация товаров
+
+ЯЗЫКИ:
+• Русский (родной)
+• Английский (Pre-Intermediate - A2/B1)
+
+СЕРТИФИКАТЫ:
+• JavaScript Algorithms and Data Structures (freeCodeCamp)
+• Responsive Web Design (freeCodeCamp)
+
+ЛИЧНЫЕ КАЧЕСТВА:
+• Быстрая обучаемость
+• Креативность
+• Внимание к деталям
+• Целеустремленность
+• Готовность к работе в команде
+
+ЦЕЛИ РАЗВИТИЯ:
+• Углубить знания React и его экосистемы
+• Изучить тестирование (Jest, React Testing Library)
+• Освоить TypeScript на продвинутом уровне
+• Получить опыт работы с большими проектами
+
+ХОББИ:
+• Веб-дизайн
+• Изучение новых технологий
+• Фотография
+• Настольные игры

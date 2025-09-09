@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets Мониторинг - AI HR System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.8;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .success-rate {
+            color: #27ae60;
+        }
+
+        .error-rate {
+            color: #e74c3c;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-success {
+            background: #27ae60;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .log-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+
+        .log-entry {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+
+        .log-error {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+
+        .log-timestamp {
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+
+        .auto-refresh {
+            margin-bottom: 15px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online {
+            background: #28a745;
+            box-shadow: 0 0 8px rgba(40, 167, 69, 0.6);
+        }
+
+        .status-offline {
+            background: #dc3545;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Google Sheets Мониторинг</h1>
+            <p>Отслеживание операций Google Sheets в реальном времени</p>
+            <div style="margin-top: 10px;">
+                <span class="status-indicator" id="statusIndicator"></span>
+                <span id="statusText">Подключение...</span>
+            </div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalOperations">0</div>
+                <div class="stat-label">Всего операций</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value success-rate" id="successfulOperations">0</div>
+                <div class="stat-label">Успешных</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value error-rate" id="failedOperations">0</div>
+                <div class="stat-label">Ошибок</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="successRate">0%</div>
+                <div class="stat-label">Успешность</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <h2>🎛️ Управление</h2>
+                <div class="controls">
+                    <button class="btn btn-success" onclick="testGoogleSheets()">Тест Google Sheets</button>
+                    <button class="btn" onclick="refreshData()">Обновить данные</button>
+                    <button class="btn btn-danger" onclick="clearLogs()">Очистить логи</button>
+                </div>
+                <div class="auto-refresh">
+                    <label>
+                        <input type="checkbox" id="autoRefresh" checked onchange="toggleAutoRefresh()">
+                        Автообновление (каждые 5 секунд)
+                    </label>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📊 Последние операции</h2>
+                <div class="log-container" id="operationsLog">
+                    <div class="loading">Загрузка операций...</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>⚠️ Ошибки</h2>
+                <div class="log-container" id="errorsLog">
+                    <div class="loading">Загрузка ошибок...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let autoRefreshInterval;
+        const API_BASE = 'http://localhost:8000';
+
+        async function fetchData(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`);
+                return await response.json();
+            } catch (error) {
+                console.error('Fetch error:', error);
+                return null;
+            }
+        }
+
+        async function updateStatistics() {
+            const stats = await fetchData('/api/debug/google-sheets/stats');
+            
+            if (stats && stats.status === 'success') {
+                const data = stats.statistics;
+                document.getElementById('totalOperations').textContent = data.total_operations;
+                document.getElementById('successfulOperations').textContent = data.successful_operations;
+                document.getElementById('failedOperations').textContent = data.failed_operations;
+                document.getElementById('successRate').textContent = data.success_rate.toFixed(1) + '%';
+                
+                updateStatus(true);
+            } else {
+                updateStatus(false);
+            }
+        }
+
+        async function updateOperationsLog() {
+            const logs = await fetchData('/api/debug/google-sheets/logs?limit=20');
+            const container = document.getElementById('operationsLog');
+            
+            if (logs && logs.status === 'success') {
+                if (logs.logs.length === 0) {
+                    container.innerHTML = '<div class="loading">Нет операций</div>';
+                    return;
+                }
+                
+                container.innerHTML = logs.logs.reverse().map(log => `
+                    <div class="log-entry ${log.success ? 'log-success' : 'log-error'}">
+                        <div class="log-timestamp">${new Date(log.timestamp).toLocaleString()}</div>
+                        <strong>${log.operation}</strong>
+                        ${log.success ? '✅' : '❌ ' + (log.error || 'Неизвестная ошибка')}
+                        ${log.data ? `<br><small>Данные: ${JSON.stringify(log.data, null, 2)}</small>` : ''}
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<div class="loading">Ошибка загрузки операций</div>';
+            }
+        }
+
+        async function updateErrorsLog() {
+            const errors = await fetchData('/api/debug/google-sheets/errors?limit=10');
+            const container = document.getElementById('errorsLog');
+            
+            if (errors && errors.status === 'success') {
+                if (errors.errors.length === 0) {
+                    container.innerHTML = '<div class="loading">Нет ошибок</div>';
+                    return;
+                }
+                
+                container.innerHTML = errors.errors.reverse().map(error => `
+                    <div class="log-entry log-error">
+                        <div class="log-timestamp">${new Date(error.timestamp).toLocaleString()}</div>
+                        <strong>${error.operation}</strong>
+                        <br>❌ ${error.error}
+                        ${error.traceback ? `<br><small>Traceback: ${error.traceback}</small>` : ''}
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<div class="loading">Ошибка загрузки ошибок</div>';
+            }
+        }
+
+        function updateStatus(online) {
+            const indicator = document.getElementById('statusIndicator');
+            const text = document.getElementById('statusText');
+            
+            if (online) {
+                indicator.className = 'status-indicator status-online';
+                text.textContent = 'Онлайн';
+            } else {
+                indicator.className = 'status-indicator status-offline';
+                text.textContent = 'Офлайн';
+            }
+        }
+
+        async function refreshData() {
+            await Promise.all([
+                updateStatistics(),
+                updateOperationsLog(),
+                updateErrorsLog()
+            ]);
+        }
+
+        async function testGoogleSheets() {
+            const result = await fetchData('/api/test/google-sheets');
+            
+            if (result) {
+                alert(`Тест Google Sheets: ${result.status}\n${result.message}`);
+                await refreshData();
+            } else {
+                alert('Ошибка выполнения теста');
+            }
+        }
+
+        async function clearLogs() {
+            if (confirm('Вы уверены, что хотите очистить все логи?')) {
+                try {
+                    const response = await fetch(`${API_BASE}/api/debug/google-sheets/clear-logs`, {
+                        method: 'POST'
+                    });
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        alert('Логи очищены');
+                        await refreshData();
+                    } else {
+                        alert('Ошибка очистки логов: ' + result.message);
+                    }
+                } catch (error) {
+                    alert('Ошибка очистки логов: ' + error.message);
+                }
+            }
+        }
+
+        function toggleAutoRefresh() {
+            const checkbox = document.getElementById('autoRefresh');
+            
+            if (checkbox.checked) {
+                autoRefreshInterval = setInterval(refreshData, 5000);
+            } else {
+                clearInterval(autoRefreshInterval);
+            }
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', async function() {
+            await refreshData();
+            toggleAutoRefresh();
+        });
+    </script>
+</body>
+</html>

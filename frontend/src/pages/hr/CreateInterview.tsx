@@ -124,9 +124,6 @@ const CreateInterview: React.FC = () => {
                 Копировать
               </button>
             </div>
-            <p className="backend-info">
-              🔧 Backend в этот момент: парсит файлы (ML-1), сохраняет всё в БД, генерирует ссылку.
-            </p>
           </div>
           <div className="actions">
             <button onClick={resetForm} className="new-interview-btn">
@@ -148,12 +145,32 @@ const CreateInterview: React.FC = () => {
     <div className="create-interview">
       <div className="header">
         <h1>Создание собеседования</h1>
-        <button 
-          onClick={() => window.location.href = '/hr/dashboard'}
-          className="back-btn"
-        >
-          ← Назад к панели
-        </button>
+        <div className="navigation-buttons">
+          <button 
+            className="nav-btn"
+            onClick={() => window.location.href = '/hr/dashboard'}
+          >
+            Главная
+          </button>
+          <button 
+            className="nav-btn active"
+            onClick={() => window.location.href = '/hr/create'}
+          >
+            Создать собеседование
+          </button>
+          <button 
+            className="nav-btn"
+            onClick={() => window.location.href = '/hr/results'}
+          >
+            Результаты
+          </button>
+          <button 
+            className="nav-btn"
+            onClick={() => window.location.href = '/test/microphone'}
+          >
+            Тест микрофона
+          </button>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="interview-form">
