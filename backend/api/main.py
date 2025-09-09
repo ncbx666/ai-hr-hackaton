@@ -260,9 +260,92 @@ def get_requirements(interview_id: str):
 # Импортируем реальные сервисы
 from speech_service import SpeechService, MLQuestionGenerator
 
+<<<<<<< HEAD
+class QuestionGenerator:
+    def __init__(self):
+        # Добавляем путь к ds1 для импорта модуля
+        import sys
+        import os
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+        
+        # Получаем API ключ из переменных окружения
+        self.api_key = os.getenv("GOOGLE_API_KEY")
+        if not self.api_key:
+            print("WARNING: GOOGLE_API_KEY не найден в переменных окружения")
+            self.api_key = "PLACEHOLDER_API_KEY"  # Заглушка для тестирования
+    
+    async def generate_question(self, transcript: str, question_number: int, job_description: str = "", previous_questions: list = None) -> str:
+        try:
+            # Импортируем функцию генерации вопросов
+            from ds1.generate_questions import generate_next_questions
+            
+            # Подготавливаем данные для генерации
+            # В реальной реализации здесь должна быть логика извлечения данных резюме
+            # из контекста сессии или базы данных
+            resume_data = {
+                "responsibilities": [],
+                "experience": [],
+                "skills": []
+            }
+            
+            vacancy_data = {
+                "vacancy_info": {
+                    "duties": job_description,
+                    "responsibilities": job_description,
+                    "requirements": "",
+                    "skills": []
+                }
+            }
+            
+            # Формируем предыдущие вопросы и ответы
+            previous_qa = []
+            if previous_questions and len(previous_questions) > 0:
+                # Берем последний вопрос как текущий
+                previous_qa = [
+                    {
+                        "question": previous_questions[-1] if previous_questions else "Предыдущий вопрос",
+                        "answer": transcript
+                    }
+                ]
+            
+            # Генерируем следующие вопросы
+            questions = generate_next_questions(resume_data, vacancy_data, previous_qa, self.api_key)
+            
+            # Возвращаем первый сгенерированный вопрос
+            if questions and len(questions) > 0:
+                # Проверяем, не является ли это ошибкой
+                if isinstance(questions, list) and len(questions) > 0:
+                    first_question = questions[0]
+                    if isinstance(first_question, dict) and "action" in first_question:
+                        if first_question["action"] == "error":
+                            print(f"[QuestionGenerator] Ошибка генерации: {first_question.get('rationale', '')}")
+                            return "Не удалось сгенерировать вопрос. Расскажите подробнее о своем опыте."
+                        elif first_question["action"] == "ask_general":
+                            return first_question.get("question", "Расскажите подробнее о вашем опыте.")
+                        else:
+                            return first_question.get("question", "Расскажите подробнее о вашем опыте.")
+                    else:
+                        return first_question.get("question", "Расскажите подробнее о вашем опыте.")
+                else:
+                    return str(questions[0]) if len(str(questions[0])) > 0 else "Расскажите подробнее о вашем опыте."
+            else:
+                return "Расскажите подробнее о вашем опыте."
+                
+        except Exception as e:
+            print(f"[QuestionGenerator] Ошибка генерации вопроса: {e}")
+            import traceback
+            traceback.print_exc()
+            return "Не удалось сгенерировать вопрос. Расскажите подробнее о своем опыте."
+
+# Создаем экземпляр генератора вопросов
+question_generator = QuestionGenerator()
+
+speech_service = MockSpeechService()
+=======
 # Инициализируем реальные сервисы
 speech_service = SpeechService()
 question_generator = MLQuestionGenerator()
+>>>>>>> fd9c1e3a04caefd684cd8abbd9c2b1a1516b0d68
 
 class InterviewSession:
     def __init__(self, session_id: str, job_description: str = ""):
