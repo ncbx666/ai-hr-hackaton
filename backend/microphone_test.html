@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Тест записи микрофона</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 50px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; }
+        .status { margin: 20px 0; padding: 10px; background: #f0f0f0; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+    </style>
+</head>
+<body>
+    <h1>🎤 Тест записи микрофона</h1>
+    
+    <div id="status" class="status">
+        Статус: Готов к тестированию
+    </div>
+    
+    <button id="requestPermission">1️⃣ Запросить разрешение</button>
+    <button id="startRecord" disabled>2️⃣ Начать запись</button>
+    <button id="stopRecord" disabled>3️⃣ Остановить запись</button>
+    <button id="playback" disabled>4️⃣ Воспроизвести</button>
+    
+    <div id="log"></div>
+    
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let audioBlob;
+        
+        const status = document.getElementById('status');
+        const log = document.getElementById('log');
+        const requestBtn = document.getElementById('requestPermission');
+        const startBtn = document.getElementById('startRecord');
+        const stopBtn = document.getElementById('stopRecord');
+        const playBtn = document.getElementById('playback');
+        
+        function updateStatus(message, type = '') {
+            status.innerHTML = message;
+            status.className = `status ${type}`;
+            
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(logEntry);
+        }
+        
+        // Запрос разрешения
+        requestBtn.onclick = async () => {
+            try {
+                updateStatus('Запрашиваю разрешение на микрофон...', '');
+                
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                updateStatus('✅ Разрешение получено!', 'success');
+                
+                startBtn.disabled = false;
+                requestBtn.disabled = true;
+                
+                // Закрываем поток
+                stream.getTracks().forEach(track => track.stop());
+                
+            } catch (error) {
+                updateStatus(`❌ Ошибка доступа к микрофону: ${error.message}`, 'error');
+                console.error('Microphone error:', error);
+            }
+        };
+        
+        // Начать запись
+        startBtn.onclick = async () => {
+            try {
+                audioChunks = [];
+                
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                        updateStatus(`📊 Записано ${audioChunks.length} чанков`, '');
+                    }
+                };
+                
+                mediaRecorder.onstop = () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    updateStatus(`🎵 Запись завершена! Размер: ${audioBlob.size} байт`, 'success');
+                    
+                    playBtn.disabled = false;
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                    
+                    // Останавливаем все треки
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                
+                mediaRecorder.start(500); // Чанки каждые 500мс
+                updateStatus('🔴 Запись началась...', '');
+                
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                
+            } catch (error) {
+                updateStatus(`❌ Ошибка записи: ${error.message}`, 'error');
+                console.error('Recording error:', error);
+            }
+        };
+        
+        // Остановить запись
+        stopBtn.onclick = () => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                updateStatus('⏹️ Остановка записи...', '');
+            }
+        };
+        
+        // Воспроизведение
+        playBtn.onclick = () => {
+            if (audioBlob) {
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                
+                audio.onplay = () => updateStatus('🔊 Воспроизведение...', '');
+                audio.onended = () => {
+                    updateStatus('✅ Воспроизведение завершено', 'success');
+                    URL.revokeObjectURL(audioUrl);
+                };
+                audio.onerror = (e) => updateStatus(`❌ Ошибка воспроизведения: ${e}`, 'error');
+                
+                audio.play();
+            }
+        };
+        
+        // Проверка поддержки браузера
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            updateStatus('❌ Ваш браузер не поддерживает запись аудио', 'error');
+        } else {
+            updateStatus('✅ Браузер поддерживает запись аудио', 'success');
+        }
+    </script>
+</body>
+</html>

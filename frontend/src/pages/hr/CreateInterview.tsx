@@ -25,7 +25,7 @@ const CreateInterview: React.FC = () => {
   const uploadFiles = async (files: File[]) => {
     const formData = new FormData();
     files.forEach(file => formData.append('files', file));
-    const response = await fetch('/api/hr/upload-multi', {
+  const response = await fetch('http://localhost:8000/api/hr/upload-multi', {
       method: 'POST',
       body: formData
     });
@@ -53,7 +53,7 @@ const CreateInterview: React.FC = () => {
         resumes: resumeLinks.map((f: { filename: string; url: string }) => ({ filename: f.filename, url: f.url }))
       };
       // Отправляем запрос на создание собеседования
-      const resp = await fetch('/api/hr/interviews', {
+  const resp = await fetch('http://localhost:8000/api/hr/interviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(interviewData)
@@ -70,9 +70,33 @@ const CreateInterview: React.FC = () => {
     }
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(generatedLink);
-    alert('Ссылка скопирована в буфер обмена!');
+  const copyToClipboard = async () => {
+    try {
+      // Попробуем современный Clipboard API
+      await navigator.clipboard.writeText(generatedLink);
+      alert('Ссылка скопирована в буфер обмена!');
+    } catch (error) {
+      // Fallback: используем старый метод через временное текстовое поле
+      const textArea = document.createElement('textarea');
+      textArea.value = generatedLink;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        document.execCommand('copy');
+        alert('Ссылка скопирована в буфер обмена!');
+      } catch (execError) {
+        console.error('Ошибка копирования:', execError);
+        // Показываем ссылку для ручного копирования
+        prompt('Скопируйте ссылку вручную:', generatedLink);
+      } finally {
+        document.body.removeChild(textArea);
+      }
+    }
   };
 
   const resetForm = () => {
@@ -210,7 +234,7 @@ const CreateInterview: React.FC = () => {
       {loading && (
         <div className="loading-overlay">
           <div className="loading-spinner">
-            <p>Обрабатываем файлы и создаём собеседование...</p>
+            <div className="custom-spinner"></div>
           </div>
         </div>
       )}
