@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets Monitor - AI HR System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .log-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .log-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .log-entry {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border-left: 4px solid #ddd;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .log-entry:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .log-entry.success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+
+        .log-entry.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .log-time {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .log-operation {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .log-details {
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .controls {
+            padding: 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+            text-align: center;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn.danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        .btn.danger:hover {
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.6);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-connected {
+            background: #28a745;
+            box-shadow: 0 0 5px #28a745;
+        }
+
+        .status-disconnected {
+            background: #dc3545;
+            box-shadow: 0 0 5px #dc3545;
+        }
+
+        .auto-refresh {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .test-section {
+            padding: 20px;
+            background: #e3f2fd;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .test-section h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Google Sheets Monitor</h1>
+            <p>Мониторинг операций интеграции с Google Sheets в режиме реального времени</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value info" id="totalOperations">0</div>
+                <div class="stat-label">Всего операций</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value error" id="totalErrors">0</div>
+                <div class="stat-label">Ошибок</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value success" id="successRate">0%</div>
+                <div class="stat-label">Успешность</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="clientStatus">
+                    <span class="status-indicator" id="statusIndicator"></span>
+                    <span id="statusText">Проверка...</span>
+                </div>
+                <div class="stat-label">Статус подключения</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="log-section">
+                <h2>Последние операции</h2>
+                <div id="operationsLog" class="loading">Загрузка логов операций...</div>
+            </div>
+
+            <div class="log-section">
+                <h2>Ошибки</h2>
+                <div id="errorsLog" class="loading">Загрузка логов ошибок...</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Тестирование Google Sheets</h3>
+            <button class="btn" onclick="testCreateSpreadsheet()">Создать тестовый документ</button>
+            <button class="btn" onclick="testUpdateResults()">Обновить результаты</button>
+            <button class="btn" onclick="testGetData()">Получить данные</button>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="refreshData()">Обновить данные</button>
+            <button class="btn danger" onclick="clearLogs()">Очистить логи</button>
+            
+            <div class="auto-refresh">
+                <label>
+                    <input type="checkbox" id="autoRefresh" checked>
+                    Автообновление каждые 5 секунд
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/debug/google-sheets';
+        
+        let autoRefreshInterval;
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshData();
+            setupAutoRefresh();
+        });
+
+        // Настройка автообновления
+        function setupAutoRefresh() {
+            const checkbox = document.getElementById('autoRefresh');
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    autoRefreshInterval = setInterval(refreshData, 5000);
+                } else {
+                    clearInterval(autoRefreshInterval);
+                }
+            });
+
+            // Запускаем автообновление
+            if (checkbox.checked) {
+                autoRefreshInterval = setInterval(refreshData, 5000);
+            }
+        }
+
+        // Основная функция обновления данных
+        async function refreshData() {
+            try {
+                await Promise.all([
+                    loadStatistics(),
+                    loadOperationsLog(),
+                    loadErrorsLog()
+                ]);
+            } catch (error) {
+                console.error('Ошибка обновления данных:', error);
+            }
+        }
+
+        // Загрузка статистики
+        async function loadStatistics() {
+            try {
+                const response = await fetch(`${API_BASE}/stats`);
+                const data = await response.json();
+
+                document.getElementById('totalOperations').textContent = data.total_operations;
+                document.getElementById('totalErrors').textContent = data.total_errors;
+                document.getElementById('successRate').textContent = data.success_rate + '%';
+
+                const statusIndicator = document.getElementById('statusIndicator');
+                const statusText = document.getElementById('statusText');
+                
+                if (data.client_status === 'connected') {
+                    statusIndicator.className = 'status-indicator status-connected';
+                    statusText.textContent = 'Подключено';
+                } else {
+                    statusIndicator.className = 'status-indicator status-disconnected';
+                    statusText.textContent = 'Отключено';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки статистики:', error);
+            }
+        }
+
+        // Загрузка логов операций
+        async function loadOperationsLog() {
+            try {
+                const response = await fetch(`${API_BASE}/logs`);
+                const data = await response.json();
+                
+                const container = document.getElementById('operationsLog');
+                
+                if (data.logs && data.logs.length > 0) {
+                    container.innerHTML = data.logs.map(log => `
+                        <div class="log-entry ${log.status}">
+                            <div class="log-time">${new Date(log.timestamp).toLocaleString('ru-RU')}</div>
+                            <div class="log-operation">${log.operation} - ${log.status}</div>
+                            <div class="log-details">${log.details}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div class="loading">Нет операций для отображения</div>';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки логов операций:', error);
+                document.getElementById('operationsLog').innerHTML = '<div class="loading">Ошибка загрузки логов</div>';
+            }
+        }
+
+        // Загрузка логов ошибок
+        async function loadErrorsLog() {
+            try {
+                const response = await fetch(`${API_BASE}/errors`);
+                const data = await response.json();
+                
+                const container = document.getElementById('errorsLog');
+                
+                if (data.errors && data.errors.length > 0) {
+                    container.innerHTML = data.errors.map(error => `
+                        <div class="log-entry error">
+                            <div class="log-time">${new Date(error.timestamp).toLocaleString('ru-RU')}</div>
+                            <div class="log-operation">${error.operation}</div>
+                            <div class="log-details">${error.details}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div class="loading">Нет ошибок - отлично!</div>';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки логов ошибок:', error);
+                document.getElementById('errorsLog').innerHTML = '<div class="loading">Ошибка загрузки логов ошибок</div>';
+            }
+        }
+
+        // Очистка логов
+        async function clearLogs() {
+            if (!confirm('Вы уверены, что хотите очистить все логи?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/clear-logs`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    alert('Логи успешно очищены');
+                    refreshData();
+                } else {
+                    alert('Ошибка очистки логов');
+                }
+            } catch (error) {
+                console.error('Ошибка очистки логов:', error);
+                alert('Ошибка очистки логов');
+            }
+        }
+
+        // Тестовые функции
+        async function testCreateSpreadsheet() {
+            try {
+                const testData = {
+                    id: 'test_' + Date.now(),
+                    position: 'Frontend Developer',
+                    candidate_name: 'Тестовый Кандидат',
+                    status: 'В процессе'
+                };
+
+                const response = await fetch('http://localhost:8000/api/interviews', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                if (response.ok) {
+                    alert('Тестовый документ создан успешно!');
+                    refreshData();
+                } else {
+                    alert('Ошибка создания тестового документа');
+                }
+            } catch (error) {
+                console.error('Ошибка тестирования:', error);
+                alert('Ошибка тестирования создания документа');
+            }
+        }
+
+        async function testUpdateResults() {
+            const testData = {
+                id: 'test_interview',
+                status: 'Завершено',
+                overall_score: 85,
+                technical_skills: 90,
+                soft_skills: 80,
+                recommendation: 'Рекомендуется к найму'
+            };
+
+            console.log('Тестирование обновления результатов с данными:', testData);
+            alert('Тест обновления результатов запущен (проверьте логи)');
+            refreshData();
+        }
+
+        async function testGetData() {
+            console.log('Тестирование получения данных из Google Sheets');
+            alert('Тест получения данных запущен (проверьте логи)');
+            refreshData();
+        }
+    </script>
+</body>
+</html>

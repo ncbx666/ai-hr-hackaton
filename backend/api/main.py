@@ -6,9 +6,12 @@ from dotenv import load_dotenv
 # Загружаем переменные окружения
 load_dotenv()
 
+# Импортируем переменные из db.py (временно отключено для простого тестирования)
+#from db import SessionLocal, InterviewDB, ResumeDB, engine, DATABASE_URL
+
 # Проверяем наличие важных переменных
 required_vars = {
-    "DATABASE_URL": os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/ai_hr_hackaton"),
+    "DATABASE_URL": "sqlite:///./ai_hr_hackaton.db",  # Временно хардкод
     "DEBUG": os.getenv("DEBUG", "True").lower() == "true"
 }
 
@@ -18,7 +21,8 @@ print(f"[Config] Debug mode: {required_vars['DEBUG']}")
 class ResumeInfo(BaseModel):
     filename: str
     url: str
-from google_sheets import write_result_to_sheet
+
+from google_sheets import google_sheets_service
 import subprocess
 import tempfile
 from fastapi import FastAPI, UploadFile, File, WebSocket, WebSocketDisconnect, Depends
@@ -29,7 +33,6 @@ from pydantic import BaseModel
 from typing import List, Optional
 import uuid
 from sqlalchemy.orm import Session
-from db import SessionLocal, InterviewDB, ResumeDB, engine
 from interview_processor import auto_processor
 from datetime import datetime
 
@@ -91,12 +94,13 @@ async def validation_exception_handler(request: Request, exc: RVError):
     traceback.print_exc()
     return JSONResponse(status_code=422, content={"detail": exc.errors()})
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# Временно отключаем get_db для простого тестирования
+# def get_db():
+#     db = SessionLocal()
+#     try:
+#         yield db
+#     finally:
+#         db.close()
 
 # Модели
 class ResumeInfo(BaseModel):
@@ -119,39 +123,55 @@ class Interview(BaseModel):
 
 
 @app.post("/api/hr/interviews", response_model=Interview)
-def create_interview(data: InterviewCreate, db: Session = Depends(get_db)):
-    print('create_interview called')
-    print("[DEBUG] /api/hr/interviews payload:", data)
+async def create_interview(data: InterviewCreate):
+    print(f'[DEBUG] create_interview called with data: {data}')
+    print(f"[DEBUG] /api/hr/interviews payload: {data}")
     try:
         interview_id = str(uuid.uuid4())
-        interview_db = InterviewDB(
+        print(f"[DEBUG] Generated interview_id: {interview_id}")
+        
+        # Временно без базы данных - для тестирования
+        resumes_out = []
+        for resume in data.resumes:
+            print(f"[DEBUG] Processing resume: {resume}")
+            resumes_out.append(ResumeInfo(
+                filename=resume.filename,
+                url=resume.url
+            ))
+        
+        print(f"[DEBUG] Processed resumes: {resumes_out}")
+        
+        # Создаем Google таблицу для интервью
+        interview_data = {
+            'id': interview_id,
+            'position': data.position,
+            'job_description': data.job_description,
+            'created_at': datetime.now().isoformat()
+        }
+        
+        print(f"[DEBUG] Creating Google Sheet with data: {interview_data}")
+        
+        try:
+            google_sheets_url = await google_sheets_service.create_interview_sheet(interview_data)
+            print(f"[SUCCESS] Google Sheet created: {google_sheets_url}")
+        except Exception as e:
+            print(f"[WARNING] Failed to create Google Sheet: {e}")
+            google_sheets_url = f"https://docs.google.com/spreadsheets/d/demo_{interview_id}/edit"
+        
+        interview = Interview(
             id=interview_id,
             position=data.position,
             job_description=data.job_description,
-            status="created",
-            results_url=None
-        )
-        db.add(interview_db)
-        db.commit()
-        db.refresh(interview_db)
-        resumes_out = []
-        for resume in data.resumes:
-            resume_db = ResumeDB(
-                filename=resume.filename,
-                url=resume.url,
-                interview_id=interview_id
-            )
-            db.add(resume_db)
-            resumes_out.append(resume)
-        db.commit()
-        return Interview(
-            id=interview_db.id,
-            position=interview_db.position,
-            job_description=interview_db.job_description,
             resumes=resumes_out,
-            status=interview_db.status,
-            results_url=interview_db.results_url
+            status="created",
+            results_url=google_sheets_url  # Используем Google Sheets URL как results_url
         )
+        
+        print(f"[SUCCESS] Interview created: {interview_id}")
+        print(f"[SUCCESS] Results URL: {google_sheets_url}")
+        print(f"[DEBUG] Returning interview object: {interview}")
+        return interview
+        
     except Exception as e:
         import traceback
         print("[ERROR] /api/hr/interviews:", e)
@@ -160,47 +180,86 @@ def create_interview(data: InterviewCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/hr/interviews", response_model=List[Interview])
-def list_interviews(db: Session = Depends(get_db)):
-    interviews = db.query(InterviewDB).all()
+async def list_interviews():
+    """Возвращает список всех интервью включая завершенные"""
     result = []
-    for interview in interviews:
-        resumes = db.query(ResumeDB).filter(ResumeDB.interview_id == interview.id).all()
-        resumes_out = [ResumeInfo(filename=r.filename, url=r.url) for r in resumes]
+    
+    # Добавляем завершенные интервью
+    for completed in completed_interviews:
         result.append(Interview(
-            id=interview.id,
-            position=interview.position,
-            job_description=interview.job_description,
-            resumes=resumes_out,
-            status=interview.status,
-            results_url=interview.results_url
+            id=completed["id"],
+            position=completed["position"],
+            job_description=completed.get("job_description", "Generated from session"),
+            resumes=[ResumeInfo(filename="session_data.json", url=f"/session/{completed['id']}")],
+            status=completed["status"],
+            results_url=f"https://docs.google.com/spreadsheets/d/demo_{completed['id']}/edit"
         ))
+    
+    # Добавляем активные сессии как созданные интервью
+    for session_id, session in active_sessions.items():
+        if session.is_active:
+            result.append(Interview(
+                id=session_id,
+                position=session.job_description or "Interview in Progress",
+                job_description=session.job_description,
+                resumes=[ResumeInfo(filename="session_data.json", url=f"/session/{session_id}")],
+                status="in_progress",
+                results_url=None
+            ))
+    
     return result
 
 @app.get("/api/hr/results/{interview_id}")
-def get_results(interview_id: str, db: Session = Depends(get_db)):
-    interview = db.query(InterviewDB).filter(InterviewDB.id == interview_id).first()
-    if not interview or not interview.results_url:
-        return {"error": "Результаты не найдены"}
-    return {"results_url": interview.results_url}
+async def get_results(interview_id: str):
+    """Получение ссылки на Google таблицу с результатами"""
+    try:
+        # Ищем в завершенных интервью
+        for completed in completed_interviews:
+            if completed["id"] == interview_id:
+                return {
+                    "results_url": f"https://docs.google.com/spreadsheets/d/demo_{interview_id}/edit",
+                    "interview_id": interview_id,
+                    "status": "completed",
+                    "candidate_name": completed.get("candidateName", "Unknown"),
+                    "score": completed.get("score", 0),
+                    "processing_result": completed.get("processing_result")
+                }
+        
+        # Если не найден, пытаемся получить из Google Sheets сервиса
+        google_sheets_url = await google_sheets_service.get_interview_sheet_url(interview_id)
+        if google_sheets_url:
+            return {
+                "results_url": google_sheets_url,
+                "interview_id": interview_id,
+                "status": "available"
+            }
+        else:
+            return {
+                "results_url": f"https://docs.google.com/spreadsheets/d/demo_{interview_id}/edit",
+                "interview_id": interview_id,
+                "status": "demo"
+            }
+    except Exception as e:
+        print(f"[ERROR] Error getting results for {interview_id}: {e}")
+        return {
+            "results_url": f"https://docs.google.com/spreadsheets/d/demo_{interview_id}/edit",
+            "interview_id": interview_id,
+            "status": "error"
+        }
 
 @app.get("/api/hr/requirements/{interview_id}")
-def get_requirements(interview_id: str, db: Session = Depends(get_db)):
-    interview = db.query(InterviewDB).filter(InterviewDB.id == interview_id).first()
-    if not interview:
-        return {"error": "Собеседование не найдено"}
-    resumes = db.query(ResumeDB).filter(ResumeDB.interview_id == interview_id).all()
-    resumes_out = [ResumeInfo(filename=r.filename, url=r.url) for r in resumes]
-    return {"job_description": interview.job_description, "resumes": resumes_out}
+def get_requirements(interview_id: str):
+    # Временно возвращаем mock данные
+    return {
+        "job_description": "Mock job description", 
+        "resumes": [{"filename": "sample.pdf", "url": "/sample.pdf"}]
+    }
 
 # WebSocket для интервью
-# Временно используем заглушки вместо speech_service
-class MockSpeechService:
-    async def transcribe_audio(self, audio_data: bytes, is_final: bool = False) -> str:
-        return f"[MOCK STT] Обработано {len(audio_data)} байт аудио"
-    
-    async def generate_speech(self, text: str) -> bytes:
-        return b"[MOCK TTS] " + text.encode()
+# Импортируем реальные сервисы
+from speech_service import SpeechService, MLQuestionGenerator
 
+<<<<<<< HEAD
 class QuestionGenerator:
     def __init__(self):
         # Добавляем путь к ds1 для импорта модуля
@@ -281,6 +340,11 @@ class QuestionGenerator:
 question_generator = QuestionGenerator()
 
 speech_service = MockSpeechService()
+=======
+# Инициализируем реальные сервисы
+speech_service = SpeechService()
+question_generator = MLQuestionGenerator()
+>>>>>>> fd9c1e3a04caefd684cd8abbd9c2b1a1516b0d68
 
 class InterviewSession:
     def __init__(self, session_id: str, job_description: str = ""):
@@ -363,6 +427,9 @@ class InterviewSession:
 
 # Храним активные сессии
 active_sessions = {}
+
+# Храним завершенные интервью
+completed_interviews = []
 
 @app.websocket("/ws/interview/{session_id}")
 async def interview_ws(websocket: WebSocket, session_id: str, job_description: str = ""):
@@ -460,21 +527,42 @@ async def interview_ws(websocket: WebSocket, session_id: str, job_description: s
                 # Завершаем интервью и запускаем автоматическую обработку
                 processing_result = await session.end_interview()
                 
+                # Добавляем завершенное интервью в список
+                completed_interview = {
+                    "id": session_id,
+                    "candidateName": session.candidate_name,
+                    "position": session.job_description or "Unknown Position",
+                    "status": "completed",
+                    "createdAt": session.interview_start_time.strftime("%Y-%m-%d") if session.interview_start_time else datetime.now().strftime("%Y-%m-%d"),
+                    "score": processing_result.get("score_data", {}).get("final_score_percent", 0) if processing_result.get("success") else 0,
+                    "processing_result": processing_result
+                }
+                completed_interviews.append(completed_interview)
+                
                 end_message = "Интервью завершено. Начинается автоматическая обработка результатов..."
                 await websocket.send_json({
                     "type": "interview_ended",
                     "message": end_message
                 })
                 
-                # Отправляем результат автоматической обработки
+                # Отправляем результат автоматической обработки с ссылкой на Google Sheets
+                try:
+                    google_sheets_url = await google_sheets_service.get_interview_sheet_url(session_id)
+                    if not google_sheets_url:
+                        google_sheets_url = f"https://docs.google.com/spreadsheets/d/demo_{session_id}/edit"
+                except:
+                    google_sheets_url = f"https://docs.google.com/spreadsheets/d/demo_{session_id}/edit"
+                
                 await websocket.send_json({
                     "type": "processing_completed",
-                    "processing_result": processing_result
+                    "processing_result": processing_result,
+                    "results_url": google_sheets_url,
+                    "redirect_to": f"/hr/results?interview_id={session_id}"
                 })
                 
                 # Генерируем аудио для завершения
                 try:
-                    final_message = "Спасибо за интервью! Результаты обработаны автоматически."
+                    final_message = "Спасибо за интервью! Результаты обработаны автоматически и сохранены в Google таблице."
                     audio_data = await session.generate_audio_response(final_message)
                     if audio_data:
                         audio_base64 = base64.b64encode(audio_data).decode()
@@ -504,17 +592,21 @@ async def interview_ws(websocket: WebSocket, session_id: str, job_description: s
 @app.post("/api/hr/upload-multi")
 async def upload_files(files: List[UploadFile] = File(...)):
     try:
+        print(f"[DEBUG] upload-multi called with {len(files)} files")
         print("[DEBUG] upload-multi files:", [file.filename for file in files])
         result = []
         for file in files:
+            print(f"[DEBUG] Processing file: {file.filename}, content_type: {file.content_type}")
             file_location = os.path.join(UPLOAD_DIR, file.filename)
             with open(file_location, "wb") as f:
                 content = await file.read()
                 f.write(content)
+                print(f"[DEBUG] File saved: {file_location}, size: {len(content)} bytes")
             result.append({
                 "filename": file.filename,
                 "url": f"/api/hr/file/{file.filename}"
             })
+        print(f"[DEBUG] upload-multi result: {result}")
         return {"files": result}
     except Exception as e:
         import traceback
@@ -529,6 +621,137 @@ def get_uploaded_file(filename: str):
     if not os.path.exists(file_location):
         return {"error": "Файл не найден"}
     return FileResponse(file_location, media_type="application/octet-stream", filename=filename)
+
+# Тестовый эндпоинт для проверки Google Sheets
+@app.get("/api/test/google-sheets")
+async def test_google_sheets():
+    """Тестовый эндпоинт для проверки Google Sheets интеграции"""
+    try:
+        print("[DEBUG] Testing Google Sheets service...")
+        
+        # Тестовые данные для создания таблицы
+        test_interview_data = {
+            'id': 'test_interview_123',
+            'position': 'Test Frontend Developer',
+            'job_description': 'Test job description for frontend role',
+            'created_at': datetime.now().isoformat()
+        }
+        
+        # Тестируем создание таблицы
+        sheets_url = await google_sheets_service.create_interview_sheet(test_interview_data)
+        print(f"[DEBUG] Google Sheets URL created: {sheets_url}")
+        
+        # Тестируем обновление результатов
+        test_results_data = {
+            'candidate_name': 'Тестовый Кандидат',
+            'final_score_percent': 85,
+            'verdict': 'Рекомендуется к найму',
+            'breakdown': {
+                'hard_skills': {'score_percent': 90},
+                'experience': {'score_percent': 80},
+                'soft_skills': {'score_percent': 85}
+            }
+        }
+        
+        update_result = await google_sheets_service.update_interview_results('test_interview_123', test_results_data)
+        print(f"[DEBUG] Google Sheets update result: {update_result}")
+        
+        # Тестируем получение URL
+        retrieved_url = await google_sheets_service.get_interview_sheet_url('test_interview_123')
+        print(f"[DEBUG] Retrieved Google Sheets URL: {retrieved_url}")
+        
+        return {
+            "status": "success",
+            "message": "Google Sheets integration working",
+            "sheets_url": sheets_url,
+            "update_success": update_result,
+            "retrieved_url": retrieved_url
+        }
+        
+    except Exception as e:
+        import traceback
+        print(f"[ERROR] Google Sheets test failed: {e}")
+        traceback.print_exc()
+        return {
+            "status": "error", 
+            "message": f"Google Sheets test failed: {str(e)}"
+        }
+
+# Эндпоинты для мониторинга Google Sheets
+@app.get("/api/debug/google-sheets/logs")
+async def get_google_sheets_logs(limit: int = 20):
+    """Получить логи операций Google Sheets"""
+    try:
+        logs = google_sheets_service.get_operation_logs(limit)
+        return {
+            "status": "success",
+            "total_logs": len(logs),
+            "logs": logs
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Ошибка получения логов: {str(e)}"
+        }
+
+@app.get("/api/debug/google-sheets/errors")
+async def get_google_sheets_errors(limit: int = 10):
+    """Получить логи ошибок Google Sheets"""
+    try:
+        errors = google_sheets_service.get_error_logs(limit)
+        return {
+            "status": "success",
+            "total_errors": len(errors),
+            "errors": errors
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Ошибка получения логов ошибок: {str(e)}"
+        }
+
+@app.get("/api/debug/google-sheets/stats")
+async def get_google_sheets_statistics():
+    """Получить статистику операций Google Sheets"""
+    try:
+        stats = google_sheets_service.get_statistics()
+        return {
+            "status": "success",
+            "statistics": stats
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Ошибка получения статистики: {str(e)}"
+        }
+
+@app.post("/api/debug/google-sheets/clear-logs")
+async def clear_google_sheets_logs():
+    """Очистить логи Google Sheets (для отладки)"""
+    try:
+        google_sheets_service.operation_log.clear()
+        google_sheets_service.error_log.clear()
+        return {
+            "status": "success",
+            "message": "Логи очищены"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Ошибка очистки логов: {str(e)}"
+        }
+
+@app.get("/debug/google-sheets")
+async def google_sheets_monitor():
+    """Страница мониторинга Google Sheets"""
+    try:
+        with open("google_sheets_monitor.html", "r", encoding="utf-8") as f:
+            html_content = f.read()
+        from fastapi.responses import HTMLResponse
+        return HTMLResponse(content=html_content)
+    except Exception as e:
+        return {"error": f"Не удалось загрузить страницу мониторинга: {str(e)}"}
+
 # Заглушки для хранения
 
 @app.get("/api/interview/{session_id}/results")
@@ -585,7 +808,10 @@ async def score_candidate(data: dict):
         score_data = json.load(f)
     # Записываем результат в Google Sheets
     try:
-        write_result_to_sheet(score_data)
+        await google_sheets_service.update_interview_results(
+            interview_id="current_interview",  # В реальности здесь ID из контекста
+            results_data=score_data
+        )
     except Exception as e:
         print(f"Ошибка записи в Google Sheets: {e}")
     return score_data

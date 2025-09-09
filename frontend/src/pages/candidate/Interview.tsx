@@ -10,6 +10,8 @@ interface Message {
   question_number?: number;
   audio_data?: string;
   processing_result?: any;
+  redirect_to?: string;
+  results_url?: string;
 }
 
 const Interview: React.FC = () => {
@@ -101,9 +103,22 @@ const Interview: React.FC = () => {
         case 'processing_completed':
           setMessages(prev => [...prev, {
             type: 'interview_ended',
-            message: 'Обработка завершена! Результаты готовы.'
+            message: 'Обработка завершена! Результаты готовы. Перенаправляем вас на страницу результатов...'
           }]);
           setProcessingResult(message.processing_result);
+          
+          // Показываем результаты и даем время прочитать сообщение
+          setTimeout(() => {
+            const msgData = message as any;
+            if (msgData.redirect_to) {
+              window.location.href = msgData.redirect_to;
+            } else if (msgData.results_url) {
+              window.open(msgData.results_url, '_blank');
+              window.location.href = '/hr/results';
+            } else {
+              window.location.href = '/hr/results';
+            }
+          }, 3000);
           break;
           
         case 'info_received':
