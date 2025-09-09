@@ -15,7 +15,10 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "start-fast": "GENERATE_SOURCEMAP=false SKIP_PREFLIGHT_CHECK=true react-scripts start",
+    "start-dev": "cross-env FAST_REFRESH=false react-scripts start",
     "build": "react-scripts build",
+    "build-fast": "GENERATE_SOURCEMAP=false react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

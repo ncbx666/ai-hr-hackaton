@@ -1,5 +1,5 @@
 """
-Google Sheets интеграция для HR системы
+Google Sheets интеграция для HR системы с мониторингом
 """
 import json
 import logging
@@ -8,7 +8,11 @@ from datetime import datetime
 import asyncio
 import traceback
 import os
+import time
 from pathlib import Path
+
+# Импортируем систему мониторинга
+from google_sheets_monitor import google_sheets_monitor, OperationType, OperationStatus
 
 # Настройка расширенного логирования
 logger = logging.getLogger(__name__)
@@ -111,27 +115,30 @@ class GoogleSheetsService:
 
     async def create_interview_sheet(self, interview_data: Dict[str, Any]) -> str:
         """
-        Создает новую Google таблицу для собеседования
+        Создает новую Google таблицу для собеседования с мониторингом
         Returns: URL таблицы
         """
+        interview_id = interview_data.get('id', 'unknown')
+        start_time = time.time()
+        
         operation_data = {
-            "interview_id": interview_data.get('id'),
+            "interview_id": interview_id,
             "position": interview_data.get('position'),
             "operation_type": "create_sheet"
         }
         
         try:
-            logger.info(f"🚀 Начинаю создание Google таблицы для интервью {interview_data.get('id')}")
+            logger.info(f"🚀 Начинаю создание Google таблицы для интервью {interview_id}")
             
             # Симуляция создания Google Sheet
-            sheet_id = f"interview_{interview_data.get('id', 'unknown')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            sheet_id = f"interview_{interview_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             
             # Формируем URL Google таблицы
             sheets_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/edit#gid=0"
             
             # Симуляция записи начальных данных
             initial_data = {
-                "Интервью ID": interview_data.get('id'),
+                "Интервью ID": interview_id,
                 "Позиция": interview_data.get('position'),
                 "Дата создания": datetime.now().isoformat(),
                 "Статус": "Создано",
@@ -142,29 +149,60 @@ class GoogleSheetsService:
             # В реальности здесь будет API вызов к Google Sheets
             await self._simulate_sheet_creation(sheet_id, initial_data)
             
-            operation_data["sheet_id"] = sheet_id
-            operation_data["sheets_url"] = sheets_url
-            operation_data["initial_data"] = initial_data
+            # Рассчитываем время выполнения
+            duration_ms = int((time.time() - start_time) * 1000)
             
+            operation_data.update({
+                "sheet_id": sheet_id,
+                "sheets_url": sheets_url,
+                "initial_data_size": len(json.dumps(initial_data))
+            })
+            
+            # Логируем в новую систему мониторинга
+            await google_sheets_monitor.log_operation(
+                operation_type=OperationType.CREATE_SHEET,
+                interview_id=interview_id,
+                status=OperationStatus.SUCCESS,
+                duration_ms=duration_ms,
+                details=operation_data
+            )
+            
+            # Логируем в старую систему для совместимости
             self._log_operation("create_interview_sheet", operation_data, success=True)
             logger.info(f"✅ Google таблица создана успешно: {sheets_url}")
             return sheets_url
             
         except Exception as e:
+            # Рассчитываем время выполнения даже при ошибке
+            duration_ms = int((time.time() - start_time) * 1000)
             error_msg = f"Ошибка создания Google таблицы: {e}"
+            
+            # Логируем ошибку в новую систему мониторинга
+            await google_sheets_monitor.log_operation(
+                operation_type=OperationType.CREATE_SHEET,
+                interview_id=interview_id,
+                status=OperationStatus.ERROR,
+                duration_ms=duration_ms,
+                details=operation_data,
+                error_message=error_msg,
+                stack_trace=traceback.format_exc()
+            )
+            
+            # Логируем в старую систему для совместимости
             self._log_operation("create_interview_sheet", operation_data, success=False, error=error_msg)
             logger.error(f"❌ {error_msg}")
-            logger.error(f"Traceback: {traceback.format_exc()}")
             
             # Возвращаем demo URL в случае ошибки
-            fallback_url = f"https://docs.google.com/spreadsheets/d/demo_{interview_data.get('id')}/edit"
+            fallback_url = f"https://docs.google.com/spreadsheets/d/demo_{interview_id}/edit"
             logger.warning(f"🔄 Используем fallback URL: {fallback_url}")
             return fallback_url
     
     async def update_interview_results(self, interview_id: str, results_data: Dict[str, Any]) -> bool:
         """
-        Обновляет результаты собеседования в Google таблице
+        Обновляет результаты собеседования в Google таблице с мониторингом
         """
+        start_time = time.time()
+        
         operation_data = {
             "interview_id": interview_id,
             "operation_type": "update_results",
@@ -189,23 +227,53 @@ class GoogleSheetsService:
             # Симуляция обновления Google Sheet
             await self._simulate_sheet_update(interview_id, update_data)
             
+            # Рассчитываем время выполнения
+            duration_ms = int((time.time() - start_time) * 1000)
+            
             operation_data["update_data"] = update_data
+            
+            # Логируем в новую систему мониторинга
+            await google_sheets_monitor.log_operation(
+                operation_type=OperationType.UPDATE_RESULTS,
+                interview_id=interview_id,
+                status=OperationStatus.SUCCESS,
+                duration_ms=duration_ms,
+                details=operation_data
+            )
+            
+            # Логируем в старую систему для совместимости
             self._log_operation("update_interview_results", operation_data, success=True)
             
             logger.info(f"✅ Результаты успешно обновлены для интервью {interview_id}")
             return True
             
         except Exception as e:
+            # Рассчитываем время выполнения даже при ошибке
+            duration_ms = int((time.time() - start_time) * 1000)
             error_msg = f"Ошибка обновления результатов: {e}"
+            
+            # Логируем ошибку в новую систему мониторинга
+            await google_sheets_monitor.log_operation(
+                operation_type=OperationType.UPDATE_RESULTS,
+                interview_id=interview_id,
+                status=OperationStatus.ERROR,
+                duration_ms=duration_ms,
+                details=operation_data,
+                error_message=error_msg,
+                stack_trace=traceback.format_exc()
+            )
+            
+            # Логируем в старую систему для совместимости
             self._log_operation("update_interview_results", operation_data, success=False, error=error_msg)
             logger.error(f"❌ {error_msg}")
-            logger.error(f"Traceback: {traceback.format_exc()}")
             return False
     
     async def get_interview_sheet_url(self, interview_id: str) -> Optional[str]:
         """
-        Получает URL Google таблицы для конкретного интервью
+        Получает URL Google таблицы для конкретного интервью с мониторингом
         """
+        start_time = time.time()
+        
         operation_data = {
             "interview_id": interview_id,
             "operation_type": "get_sheet_url"
@@ -218,18 +286,46 @@ class GoogleSheetsService:
             sheet_id = f"interview_{interview_id}"
             sheets_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/edit#gid=0"
             
+            # Рассчитываем время выполнения
+            duration_ms = int((time.time() - start_time) * 1000)
+            
             operation_data["sheet_id"] = sheet_id
             operation_data["sheets_url"] = sheets_url
             
+            # Логируем в новую систему мониторинга
+            await google_sheets_monitor.log_operation(
+                operation_type=OperationType.GET_URL,
+                interview_id=interview_id,
+                status=OperationStatus.SUCCESS,
+                duration_ms=duration_ms,
+                details=operation_data
+            )
+            
+            # Логируем в старую систему для совместимости
             self._log_operation("get_interview_sheet_url", operation_data, success=True)
-            logger.info(f"✅ URL таблицы найден для интервью {interview_id}: {sheets_url}")
+            
+            logger.info(f"✅ URL успешно получен: {sheets_url}")
             return sheets_url
             
         except Exception as e:
-            error_msg = f"Ошибка получения URL таблицы: {e}"
+            # Рассчитываем время выполнения даже при ошибке
+            duration_ms = int((time.time() - start_time) * 1000)
+            error_msg = f"Ошибка получения URL: {e}"
+            
+            # Логируем ошибку в новую систему мониторинга
+            await google_sheets_monitor.log_operation(
+                operation_type=OperationType.GET_URL,
+                interview_id=interview_id,
+                status=OperationStatus.ERROR,
+                duration_ms=duration_ms,
+                details=operation_data,
+                error_message=error_msg,
+                stack_trace=traceback.format_exc()
+            )
+            
+            # Логируем в старую систему для совместимости
             self._log_operation("get_interview_sheet_url", operation_data, success=False, error=error_msg)
             logger.error(f"❌ {error_msg}")
-            logger.error(f"Traceback: {traceback.format_exc()}")
             return None
     
     async def _simulate_sheet_creation(self, sheet_id: str, data: Dict[str, Any]):

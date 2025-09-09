@@ -19,3 +19,73 @@
 2025-09-09 12:33:08,664 - google_sheets_service - INFO - __init__:47 - [GoogleSheetsService] Инициализирован с расширенным логированием
 2025-09-09 12:33:08,665 - google_sheets_service - INFO - __init__:47 - [GoogleSheetsService] Инициализирован с расширенным логированием
 2025-09-09 12:33:08,725 - google_sheets_service - INFO - __init__:47 - [GoogleSheetsService] Инициализирован с расширенным логированием
+2025-09-09 13:33:04,479 - google_sheets_service - INFO - __init__:51 - [GoogleSheetsService] Инициализирован с расширенным логированием
+2025-09-09 13:33:04,481 - google_sheets_service - INFO - update_interview_results:214 - 🔄 Начинаю обновление результатов для интервью test-interview-001
+2025-09-09 13:33:04,799 - google_sheets_service - DEBUG - _simulate_sheet_update:339 - [GoogleSheetsService] Симуляция обновления таблицы для интервью test-interview-001: {'Кандидат': 'Иван Петров', 'Финальный балл': '85%', 'Вердикт': 'Рекомендуется к найму', 'Технические навыки': '90%', 'Опыт работы': '80%', 'Soft Skills': '85%', 'Дата обновления': '2025-09-09T13:33:04.488429'}
+2025-09-09 13:33:04,800 - google_sheets_service - INFO - _log_operation:70 - ✅ Google Sheets операция успешна: update_interview_results
+2025-09-09 13:33:04,803 - google_sheets_service - DEBUG - _log_operation:71 - Детали операции: {
+  "interview_id": "test-interview-001",
+  "operation_type": "update_results",
+  "candidate_name": "Иван Петров",
+  "final_score": 85,
+  "update_data": {
+    "Кандидат": "Иван Петров",
+    "Финальный балл": "85%",
+    "Вердикт": "Рекомендуется к найму",
+    "Технические навыки": "90%",
+    "Опыт работы": "80%",
+    "Soft Skills": "85%",
+    "Дата обновления": "2025-09-09T13:33:04.488429"
+  }
+}
+2025-09-09 13:33:04,804 - google_sheets_service - INFO - update_interview_results:247 - ✅ Результаты успешно обновлены для интервью test-interview-001
+2025-09-09 13:33:04,807 - google_sheets_service - INFO - get_interview_sheet_url:283 - 🔍 Получение URL таблицы для интервью test-interview-001
+2025-09-09 13:33:04,810 - google_sheets_service - INFO - _log_operation:70 - ✅ Google Sheets операция успешна: get_interview_sheet_url
+2025-09-09 13:33:04,813 - google_sheets_service - DEBUG - _log_operation:71 - Детали операции: {
+  "interview_id": "test-interview-001",
+  "operation_type": "get_sheet_url",
+  "sheet_id": "interview_test-interview-001",
+  "sheets_url": "https://docs.google.com/spreadsheets/d/interview_test-interview-001/edit#gid=0"
+}
+2025-09-09 13:33:04,813 - google_sheets_service - INFO - get_interview_sheet_url:307 - ✅ URL успешно получен: https://docs.google.com/spreadsheets/d/interview_test-interview-001/edit#gid=0
+2025-09-09 13:34:20,109 - google_sheets_service - INFO - __init__:51 - [GoogleSheetsService] Инициализирован с расширенным логированием
+2025-09-09 13:34:20,110 - google_sheets_service - INFO - create_interview_sheet:131 - 🚀 Начинаю создание Google таблицы для интервью test-interview-001
+2025-09-09 13:34:20,621 - google_sheets_service - DEBUG - _simulate_sheet_creation:334 - [GoogleSheetsService] Симуляция создания таблицы interview_test-interview-001_20250909_133420 с данными: {'Интервью ID': 'test-interview-001', 'Позиция': 'Python Developer', 'Дата создания': '2025-09-09T13:34:20.116241', 'Статус': 'Создано', 'Кандидат': 'Ожидается', 'Результат': 'В процессе'}
+2025-09-09 13:34:20,622 - google_sheets_service - INFO - _log_operation:70 - ✅ Google Sheets операция успешна: create_interview_sheet
+2025-09-09 13:34:20,625 - google_sheets_service - DEBUG - _log_operation:71 - Детали операции: {
+  "interview_id": "test-interview-001",
+  "position": "Python Developer",
+  "operation_type": "create_sheet",
+  "sheet_id": "interview_test-interview-001_20250909_133420",
+  "sheets_url": "https://docs.google.com/spreadsheets/d/interview_test-interview-001_20250909_133420/edit#gid=0",
+  "initial_data_size": 563
+}
+2025-09-09 13:34:20,625 - google_sheets_service - INFO - create_interview_sheet:172 - ✅ Google таблица создана успешно: https://docs.google.com/spreadsheets/d/interview_test-interview-001_20250909_133420/edit#gid=0
+2025-09-09 13:34:20,628 - google_sheets_service - INFO - update_interview_results:214 - 🔄 Начинаю обновление результатов для интервью test-interview-001
+2025-09-09 13:34:20,935 - google_sheets_service - DEBUG - _simulate_sheet_update:339 - [GoogleSheetsService] Симуляция обновления таблицы для интервью test-interview-001: {'Кандидат': 'Иван Петров', 'Финальный балл': '85%', 'Вердикт': 'Рекомендуется к найму', 'Технические навыки': '90%', 'Опыт работы': '80%', 'Soft Skills': '85%', 'Дата обновления': '2025-09-09T13:34:20.631963'}
+2025-09-09 13:34:20,936 - google_sheets_service - INFO - _log_operation:70 - ✅ Google Sheets операция успешна: update_interview_results
+2025-09-09 13:34:20,939 - google_sheets_service - DEBUG - _log_operation:71 - Детали операции: {
+  "interview_id": "test-interview-001",
+  "operation_type": "update_results",
+  "candidate_name": "Иван Петров",
+  "final_score": 85,
+  "update_data": {
+    "Кандидат": "Иван Петров",
+    "Финальный балл": "85%",
+    "Вердикт": "Рекомендуется к найму",
+    "Технические навыки": "90%",
+    "Опыт работы": "80%",
+    "Soft Skills": "85%",
+    "Дата обновления": "2025-09-09T13:34:20.631963"
+  }
+}
+2025-09-09 13:34:20,940 - google_sheets_service - INFO - update_interview_results:247 - ✅ Результаты успешно обновлены для интервью test-interview-001
+2025-09-09 13:34:20,943 - google_sheets_service - INFO - get_interview_sheet_url:283 - 🔍 Получение URL таблицы для интервью test-interview-001
+2025-09-09 13:34:20,946 - google_sheets_service - INFO - _log_operation:70 - ✅ Google Sheets операция успешна: get_interview_sheet_url
+2025-09-09 13:34:20,949 - google_sheets_service - DEBUG - _log_operation:71 - Детали операции: {
+  "interview_id": "test-interview-001",
+  "operation_type": "get_sheet_url",
+  "sheet_id": "interview_test-interview-001",
+  "sheets_url": "https://docs.google.com/spreadsheets/d/interview_test-interview-001/edit#gid=0"
+}
+2025-09-09 13:34:20,950 - google_sheets_service - INFO - get_interview_sheet_url:307 - ✅ URL успешно получен: https://docs.google.com/spreadsheets/d/interview_test-interview-001/edit#gid=0
