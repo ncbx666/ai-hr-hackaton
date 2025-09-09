@@ -24,7 +24,19 @@ const HRDashboard: React.FC = () => {
       const response = await fetch('http://localhost:8000/api/hr/interviews');
       if (response.ok) {
         const data = await response.json();
-        setInterviews(data);
+        // API возвращает объект с полем interviews, а не массив напрямую
+        if (data && Array.isArray(data.interviews)) {
+          setInterviews(data.interviews);
+        } else if (data && typeof data === 'object' && 'interviews' in data) {
+          // Если API вернул объект с полем interviews
+          setInterviews([]);
+        } else if (Array.isArray(data)) {
+          // Если API вернул массив напрямую
+          setInterviews(data);
+        } else {
+          // Если формат неожиданный, используем пустой массив
+          setInterviews([]);
+        }
         setLoading(false);
         return;
       }
