@@ -10,7 +10,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-// HR отправляет команду /invite <user_id> <имя> <дата> <ссылка>
+// HR отправляет команду /invite <user_id> <имя> <ссылка>
 func main() {
 	botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
 	if botToken == "" {
@@ -28,37 +28,45 @@ func main() {
 	updates := bot.GetUpdatesChan(u)
 
 	for update := range updates {
-		if update.Message != nil && update.Message.IsCommand() {
-			if update.Message.Command() == "invite" {
-				args := strings.Split(update.Message.CommandArguments(), " ")
-				if len(args) < 4 {
-					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Ошибка: используйте /invite <user_id> <имя> <дата> <ссылка>"))
-					continue
-				}
-				userID, err := strconv.ParseInt(args[0], 10, 64)
-				if err != nil {
-					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Ошибка: user_id должен быть числом"))
-					continue
-				}
-				name := args[1]
-				date := args[2]
-				link := args[3]
-				msg := tgbotapi.NewMessage(userID, fmt.Sprintf("Вас приглашают на собеседование!\nИмя: %s\nДата: %s\nСсылка: %s", name, date, link))
-				// Кнопка подтверждения
-				confirmBtn := tgbotapi.NewInlineKeyboardButtonData("Подтвердить", "confirm:"+fmt.Sprint(update.Message.Chat.ID))
-				msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
-					[]tgbotapi.InlineKeyboardButton{confirmBtn},
-				)
-				bot.Send(msg)
-				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Приглашение отправлено кандидату."))
-			}
-		}
-		if update.CallbackQuery != nil {
-			if strings.HasPrefix(update.CallbackQuery.Data, "confirm:") {
-				hrID, _ := strconv.ParseInt(update.CallbackQuery.Data[8:], 10, 64)
-				bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Спасибо, ваше собеседование подтверждено!"))
-				bot.Send(tgbotapi.NewMessage(hrID, "Кандидат подтвердил участие в собеседовании."))
-			}
-		}
+		   if update.Message != nil && update.Message.IsCommand() {
+			   if update.Message.Command() == "invite" {
+				   args := strings.Split(update.Message.CommandArguments(), " ")
+				   if len(args) < 3 {
+					   bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Ошибка: используйте /invite <user_id> <имя> <ссылка>"))
+					   continue
+				   }
+				   userID, err := strconv.ParseInt(args[0], 10, 64)
+				   if err != nil {
+					   bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Ошибка: user_id должен быть числом"))
+					   continue
+				   }
+				   name := args[1]
+				   link := args[2]
+				   // Сохраняем связь между кандидатом и HR
+				   if candidateToHR == nil {
+					   candidateToHR = make(map[int64]int64)
+				   }
+				   candidateToHR[userID] = update.Message.Chat.ID
+				   msg := tgbotapi.NewMessage(userID, fmt.Sprintf("Вас приглашают на собеседование!\nИмя: %s\nСсылка: %s\n\nПожалуйста, введите удобную дату и время собеседования в формате ДД.ММ.ГГГГ ЧЧ:ММ", name, link))
+				   bot.Send(msg)
+				   bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Приглашение отправлено кандидату. Ожидаем ответа с датой."))
+			   }
+		   }
+		   // Обработка ответа кандидата с датой
+		   if update.Message != nil && !update.Message.IsCommand() {
+			   userID := update.Message.From.ID
+			   if candidateToHR != nil {
+				   hrID, ok := candidateToHR[userID]
+				   if ok {
+					   // Проверяем формат даты (очень простой, можно доработать)
+					   dateText := update.Message.Text
+					   // Пересылаем HR
+					   bot.Send(tgbotapi.NewMessage(hrID, fmt.Sprintf("Кандидат выбрал дату собеседования: %s", dateText)))
+					   // Сообщаем кандидату, что его дата отправлена HR
+					   bot.Send(tgbotapi.NewMessage(userID, "Спасибо! Ваш вариант даты отправлен HR. Ожидайте подтверждения."))
+					   // Можно добавить логику подтверждения от HR
+				   }
+			   }
+		   }
 	}
 }
