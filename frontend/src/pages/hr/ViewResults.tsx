@@ -44,9 +44,27 @@ const ViewResults: React.FC = () => {
   const [results, setResults] = useState<CandidateResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
+  const [googleSheetsUrl, setGoogleSheetsUrl] = useState<string>('');
 
   useEffect(() => {
-    // Загружаем пример результата из существующего файла
+    loadResults();
+  }, []);
+
+  const loadResults = async () => {
+    try {
+      // Пытаемся загрузить реальные результаты из API
+      const response = await fetch('http://localhost:8000/api/hr/results/current_interview');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.results_url) {
+          setGoogleSheetsUrl(data.results_url);
+        }
+      }
+    } catch (error) {
+      console.warn('Не удалось загрузить реальные результаты, используем demo данные');
+    }
+
+    // Загружаем demo результаты для отображения
     const mockResult: CandidateResult = {
       candidate_name: "Сергеев Иван Петрович",
       final_score_percent: 82.33,
@@ -102,7 +120,7 @@ const ViewResults: React.FC = () => {
       setResults(mockResult);
       setLoading(false);
     }, 1000);
-  }, []);
+  };
 
   const getVerdictClass = (verdict: string) => {
     if (verdict.includes('Рекомендован')) return 'verdict-recommended';
@@ -144,10 +162,9 @@ const ViewResults: React.FC = () => {
     XLSX.writeFile(workbook, 'interview_results.xlsx');
   };
 
-  // Ссылка на Google Sheets (заглушка, заменить на реальную при интеграции)
-  const googleSheetsUrl = 'https://docs.google.com/spreadsheets/d/your-sheet-id';
   const openGoogleSheets = () => {
-    window.open(googleSheetsUrl, '_blank');
+    const urlToOpen = googleSheetsUrl || 'https://docs.google.com/spreadsheets/d/demo_sheet/edit';
+    window.open(urlToOpen, '_blank');
   };
 
   if (loading) {
@@ -170,6 +187,32 @@ const ViewResults: React.FC = () => {
     <div className="view-results">
       <div className="header">
         <h1>Результаты собеседования</h1>
+        <div className="navigation-buttons">
+          <button 
+            className="nav-btn"
+            onClick={() => window.location.href = '/hr/dashboard'}
+          >
+            Главная
+          </button>
+          <button 
+            className="nav-btn"
+            onClick={() => window.location.href = '/hr/create'}
+          >
+            Создать собеседование
+          </button>
+          <button 
+            className="nav-btn active"
+            onClick={() => window.location.href = '/hr/results'}
+          >
+            Результаты
+          </button>
+          <button 
+            className="nav-btn"
+            onClick={() => window.location.href = '/test/microphone'}
+          >
+            Тест микрофона
+          </button>
+        </div>
         <div className="header-actions">
           <button 
             onClick={() => setEditMode(!editMode)}
@@ -182,12 +225,6 @@ const ViewResults: React.FC = () => {
           </button>
           <button onClick={openGoogleSheets} className="export-btn">
             Открыть Google Sheets
-          </button>
-          <button 
-            onClick={() => window.location.href = '/hr/dashboard'}
-            className="back-btn"
-          >
-            ← Назад
           </button>
         </div>
       </div>

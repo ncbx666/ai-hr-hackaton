@@ -1,0 +1,86 @@
+РЕЗЮМЕ
+
+ФИО: Иванова Мария Сергеевна
+Дата рождения: 22.08.1995 (28 лет)
+Город: Санкт-Петербург
+Телефон: +7 (812) 987-65-43
+Email: ivanova.maria@email.com
+GitHub: github.com/maria-ivanova
+
+ЖЕЛАЕМАЯ ПОЗИЦИЯ: Middle Backend Developer (Python)
+
+ОПЫТ РАБОТЫ:
+
+2022 - настоящее время | Middle Backend Developer | DataFlow Systems
+• Разработка микросервисов на FastAPI для обработки больших данных
+• Проектирование и оптимизация PostgreSQL баз данных
+• Создание REST API с документацией в OpenAPI
+• Интеграция с внешними API (платежные системы, аналитика)
+• Настройка CI/CD пайплайнов в GitLab
+• Покрытие кода тестами 90%
+
+Технологии: Python, FastAPI, PostgreSQL, Redis, Docker, Kubernetes, GitLab CI
+
+2020 - 2022 | Junior Backend Developer | WebTech Solutions
+• Разработка веб-приложений на Django
+• Создание административных панелей
+• Работа с ORM Django и оптимизация запросов
+• Интеграция с фронтендом через REST API
+• Написание unit и интеграционных тестов
+
+Технологии: Python, Django, Django REST Framework, MySQL, Celery, Redis
+
+2019 - 2020 | Python Developer (стажер) | StartupLab
+• Изучение Python и веб-разработки
+• Участие в разработке внутренних инструментов
+• Автоматизация рутинных задач с помощью скриптов
+• Изучение SQL и работа с базами данных
+
+Технологии: Python, Flask, SQLite, HTML/CSS
+
+ОБРАЗОВАНИЕ:
+2017 - 2021 | Бакалавр, Прикладная математика и информатика
+Санкт-Петербургский государственный университет
+Средний балл: 4.7/5.0
+
+ДОПОЛНИТЕЛЬНОЕ ОБРАЗОВАНИЕ:
+• 2021 | Курс "Архитектура высоконагруженных систем" (Яндекс.Практикум)
+• 2020 | Сертификат AWS Cloud Practitioner
+• 2019 | Курс "Python для веб-разработки" (GeekBrains)
+
+ТЕХНИЧЕСКИЕ НАВЫКИ:
+Backend: Python, FastAPI, Django, Flask
+Databases: PostgreSQL, MySQL, Redis, MongoDB (базовый)
+DevOps: Docker, Kubernetes, GitLab CI, Nginx
+Cloud: AWS (EC2, S3, RDS), базовые знания GCP
+Testing: pytest, unittest, Postman
+Other: Git, Linux, SQL, RESTful APIs
+
+ПРОЕКТЫ:
+1. E-commerce API (личный проект)
+   • FastAPI + PostgreSQL + Redis
+   • JWT аутентификация, обработка платежей
+   • Docker-compose для локальной разработки
+   • GitHub: github.com/maria-ivanova/ecommerce-api
+
+2. Система мониторинга логов
+   • Микросервисная архитектура на FastAPI
+   • Обработка 10k+ запросов в секунду
+   • Elasticsearch для поиска по логам
+
+ЯЗЫКИ:
+• Русский (родной)
+• Английский (Intermediate - B1)
+
+ЛИЧНЫЕ КАЧЕСТВА:
+• Аналитический склад ума
+• Внимание к деталям
+• Способность к самообучению
+• Командный игрок
+• Стрессоустойчивость
+
+ИНТЕРЕСЫ:
+• Изучение новых технологий
+• Open Source проекты
+• Алгоритмы и структуры данных
+• Машинное обучение (изучаю в свободное время)

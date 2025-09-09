@@ -1,0 +1,68 @@
+РЕЗЮМЕ
+
+ФИО: Сидоров Павел Викторович
+Дата рождения: 05.07.1990 (33 года)
+Город: Москва
+Телефон: +7 (905) 321-54-87
+Email: sidorov.pavel@email.com
+LinkedIn: linkedin.com/in/pavel-sidorov
+
+ЖЕЛАЕМАЯ ПОЗИЦИЯ: Middle DevOps Engineer
+
+ОПЫТ РАБОТЫ:
+
+2021 - настоящее время | DevOps Engineer | TechInnovate Ltd
+• Настройка и поддержка Kubernetes кластеров в AWS
+• Создание CI/CD пайплайнов в GitLab CI для 15+ проектов
+• Мониторинг инфраструктуры с помощью Prometheus + Grafana
+• Автоматизация развертывания с помощью Terraform и Ansible
+• Обеспечение безопасности: настройка VPN, firewall, SSL сертификатов
+• Уменьшение времени развертывания на 60%
+
+Технологии: Kubernetes, Docker, AWS, Terraform, Ansible, GitLab CI, Prometheus, Grafana
+
+2019 - 2021 | System Administrator | DataCenter Pro
+• Администрирование Linux серверов (Ubuntu, CentOS)
+• Настройка web-серверов (Nginx, Apache)
+• Управление базами данных (MySQL, PostgreSQL)
+• Создание и поддержка backup систем
+• Мониторинг серверов и сетевого оборудования
+
+Технологии: Linux, Nginx, Apache, MySQL, PostgreSQL, Bash scripting
+
+2017 - 2019 | Junior System Administrator | WebHosting Solutions
+• Поддержка shared hosting среды
+• Настройка DNS записей
+• Техническая поддержка клиентов
+• Обновление и патчинг серверов
+
+ОБРАЗОВАНИЕ:
+2012 - 2017 | Специалист, Информационные системы и технологии
+Московский технический университет связи и информатики
+
+СЕРТИФИКАТЫ:
+• AWS Certified Solutions Architect - Associate (2022)
+• Certified Kubernetes Administrator (CKA) (2021)
+• Linux Professional Institute Certification Level 1 (2020)
+
+ТЕХНИЧЕСКИЕ НАВЫКИ:
+Cloud: AWS (EC2, S3, RDS, VPC, CloudFormation), базовые знания GCP
+Containerization: Docker, Kubernetes, Docker Compose
+IaC: Terraform, Ansible, CloudFormation
+CI/CD: GitLab CI, Jenkins, GitHub Actions
+Monitoring: Prometheus, Grafana, ELK Stack
+OS: Linux (Ubuntu, CentOS, RHEL), Windows Server
+Scripting: Bash, Python (базовый)
+Databases: MySQL, PostgreSQL, Redis
+Web Servers: Nginx, Apache
+
+ЯЗЫКИ:
+• Русский (родной)
+• Английский (Intermediate - B1)
+
+ЛИЧНЫЕ КАЧЕСТВА:
+• Системное мышление
+• Внимание к деталям
+• Способность работать под давлением
+• Готовность к обучению
+• Командная работа
