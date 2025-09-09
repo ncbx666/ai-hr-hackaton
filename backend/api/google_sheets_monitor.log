@@ -469,3 +469,16 @@
 2025-09-09 13:34:21,012 - GoogleSheetsMonitor - INFO - [create_sheet] perf-test-098: success (148ms)
 2025-09-09 13:34:21,013 - GoogleSheetsMonitor - ERROR - Ошибка сохранения лога в файл: Expecting value: line 4 column 23 (char 75)
 2025-09-09 13:34:21,013 - GoogleSheetsMonitor - INFO - [create_sheet] perf-test-099: success (149ms)
+2025-09-09 21:10:44,484 - GoogleSheetsMonitor - INFO - [GoogleSheetsMonitor] Инициализирован
+2025-09-09 21:10:44,487 - google_sheets_service - INFO - [GoogleSheetsService] Инициализирован с расширенным логированием
+2025-09-09 21:10:45,036 - google_sheets_service - DEBUG - [GoogleSheetsService] Симуляция создания таблицы interview_ec34e02f-59cb-4bdc-ae74-f96dc6a8b66d_20250909_211044 с данными: {'Интервью ID': 'ec34e02f-59cb-4bdc-ae74-f96dc6a8b66d', 'Позиция': 'Frontend Developer', 'Дата создания': '2025-09-09T21:10:44.533948', 'Статус': 'Создано', 'Кандидат': 'Ожидается', 'Результат': 'В процессе'}
+2025-09-09 21:10:45,039 - GoogleSheetsMonitor - ERROR - Ошибка сохранения лога в файл: Expecting value: line 4 column 23 (char 75)
+2025-09-09 21:10:45,039 - GoogleSheetsMonitor - INFO - [create_sheet] ec34e02f-59cb-4bdc-ae74-f96dc6a8b66d: success (549ms)
+2025-09-09 21:10:45,051 - google_sheets_service - DEBUG - Детали операции: {
+  "interview_id": "ec34e02f-59cb-4bdc-ae74-f96dc6a8b66d",
+  "position": "Frontend Developer",
+  "operation_type": "create_sheet",
+  "sheet_id": "interview_ec34e02f-59cb-4bdc-ae74-f96dc6a8b66d_20250909_211044",
+  "sheets_url": "https://docs.google.com/spreadsheets/d/interview_ec34e02f-59cb-4bdc-ae74-f96dc6a8b66d_20250909_211044/edit#gid=0",
+  "initial_data_size": 583
+}

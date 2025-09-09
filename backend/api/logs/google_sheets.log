@@ -89,3 +89,16 @@
   "sheets_url": "https://docs.google.com/spreadsheets/d/interview_test-interview-001/edit#gid=0"
 }
 2025-09-09 13:34:20,950 - google_sheets_service - INFO - get_interview_sheet_url:307 - ✅ URL успешно получен: https://docs.google.com/spreadsheets/d/interview_test-interview-001/edit#gid=0
+2025-09-09 21:10:44,487 - google_sheets_service - INFO - __init__:51 - [GoogleSheetsService] Инициализирован с расширенным логированием
+2025-09-09 21:10:44,488 - google_sheets_service - INFO - create_interview_sheet:131 - 🚀 Начинаю создание Google таблицы для интервью ec34e02f-59cb-4bdc-ae74-f96dc6a8b66d
+2025-09-09 21:10:45,036 - google_sheets_service - DEBUG - _simulate_sheet_creation:334 - [GoogleSheetsService] Симуляция создания таблицы interview_ec34e02f-59cb-4bdc-ae74-f96dc6a8b66d_20250909_211044 с данными: {'Интервью ID': 'ec34e02f-59cb-4bdc-ae74-f96dc6a8b66d', 'Позиция': 'Frontend Developer', 'Дата создания': '2025-09-09T21:10:44.533948', 'Статус': 'Создано', 'Кандидат': 'Ожидается', 'Результат': 'В процессе'}
+2025-09-09 21:10:45,039 - google_sheets_service - INFO - _log_operation:70 - ✅ Google Sheets операция успешна: create_interview_sheet
+2025-09-09 21:10:45,051 - google_sheets_service - DEBUG - _log_operation:71 - Детали операции: {
+  "interview_id": "ec34e02f-59cb-4bdc-ae74-f96dc6a8b66d",
+  "position": "Frontend Developer",
+  "operation_type": "create_sheet",
+  "sheet_id": "interview_ec34e02f-59cb-4bdc-ae74-f96dc6a8b66d_20250909_211044",
+  "sheets_url": "https://docs.google.com/spreadsheets/d/interview_ec34e02f-59cb-4bdc-ae74-f96dc6a8b66d_20250909_211044/edit#gid=0",
+  "initial_data_size": 583
+}
+2025-09-09 21:10:45,051 - google_sheets_service - INFO - create_interview_sheet:172 - ✅ Google таблица создана успешно: https://docs.google.com/spreadsheets/d/interview_ec34e02f-59cb-4bdc-ae74-f96dc6a8b66d_20250909_211044/edit#gid=0
