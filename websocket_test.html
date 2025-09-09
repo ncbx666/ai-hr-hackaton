@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Тест</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .connected { background-color: #d4edda; color: #155724; }
+        .disconnected { background-color: #f8d7da; color: #721c24; }
+        .message { background-color: #d1ecf1; color: #0c5460; margin: 5px 0; padding: 5px; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; }
+        .btn-connect { background-color: #28a745; color: white; border: none; }
+        .btn-disconnect { background-color: #dc3545; color: white; border: none; }
+        #messages { max-height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 WebSocket Тест для AI-HR Системы</h1>
+    
+    <div>
+        <button id="connectBtn" class="btn-connect" onclick="connect()">Подключиться</button>
+        <button id="disconnectBtn" class="btn-disconnect" onclick="disconnect()" disabled>Отключиться</button>
+    </div>
+    
+    <div id="status" class="status disconnected">❌ Не подключен</div>
+    
+    <h3>📨 Сообщения:</h3>
+    <div id="messages"></div>
+    
+    <script>
+        let socket = null;
+        const messagesDiv = document.getElementById('messages');
+        const statusDiv = document.getElementById('status');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        
+        function addMessage(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = 'message';
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function updateStatus(connected) {
+            if (connected) {
+                statusDiv.className = 'status connected';
+                statusDiv.innerHTML = '✅ Подключен к WebSocket серверу';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+            } else {
+                statusDiv.className = 'status disconnected';
+                statusDiv.innerHTML = '❌ Не подключен';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+            }
+        }
+        
+        function connect() {
+            if (socket) {
+                addMessage('Уже подключен!', 'warning');
+                return;
+            }
+            
+            const wsUrl = 'ws://localhost:8001/ws/interview/test-session';
+            addMessage(`🔄 Подключаемся к ${wsUrl}...`);
+            
+            socket = new WebSocket(wsUrl);
+            
+            socket.onopen = function(event) {
+                addMessage('✅ WebSocket подключение установлено!', 'success');
+                updateStatus(true);
+            };
+            
+            socket.onmessage = function(event) {
+                addMessage(`📨 Получено: ${event.data}`, 'message');
+            };
+            
+            socket.onclose = function(event) {
+                addMessage(`🔌 Соединение закрыто. Код: ${event.code}, Причина: ${event.reason}`, 'warning');
+                socket = null;
+                updateStatus(false);
+            };
+            
+            socket.onerror = function(error) {
+                addMessage(`❌ Ошибка WebSocket: ${error}`, 'error');
+                socket = null;
+                updateStatus(false);
+            };
+        }
+        
+        function disconnect() {
+            if (socket) {
+                socket.close();
+                socket = null;
+                addMessage('🔌 Принудительное отключение');
+                updateStatus(false);
+            }
+        }
+        
+        // Автоматическое подключение при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            addMessage('🚀 Страница загружена. Готов к тестированию WebSocket!');
+        });
+    </script>
+</body>
+</html>

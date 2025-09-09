@@ -59,7 +59,7 @@ const Interview: React.FC = () => {
   useEffect(() => {
     if (!sessionId) return;
 
-    const websocket = new WebSocket(`ws://localhost:8000/ws/interview/${sessionId}`);
+    const websocket = new WebSocket(`ws://localhost:8001/ws/interview/${sessionId}`);
     
     websocket.onopen = () => {
       console.log('[WebSocket] Подключение установлено');
@@ -279,9 +279,31 @@ const Interview: React.FC = () => {
 
   // Завершение интервью
   const endInterview = () => {
+    // Отправляем сообщение о завершении через WebSocket
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({ type: 'end_interview' }));
     }
+    
+    // Останавливаем запись если активна
+    if (isRecording) {
+      stopRecording();
+    }
+    
+    // Закрываем WebSocket соединение
+    if (ws) {
+      ws.close();
+    }
+    
+    // Показываем сообщение и перенаправляем
+    setTimeout(() => {
+      alert('Интервью завершено! Спасибо за участие.');
+      // Закрываем окно или перенаправляем на главную
+      if (window.opener) {
+        window.close(); // Закрываем если открыто в новом окне
+      } else {
+        window.location.href = '/'; // Иначе перенаправляем на главную
+      }
+    }, 1000);
   };
 
   return (

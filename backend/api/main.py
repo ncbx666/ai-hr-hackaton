@@ -23,6 +23,7 @@ class ResumeInfo(BaseModel):
     url: str
 
 from google_sheets import google_sheets_service
+from monitoring_endpoints import router as monitoring_router
 import subprocess
 import tempfile
 from fastapi import FastAPI, UploadFile, File, WebSocket, WebSocketDisconnect, Depends
@@ -732,6 +733,9 @@ async def score_candidate(data: dict):
     except Exception as e:
         print(f"Ошибка записи в Google Sheets: {e}")
     return score_data
+
+# Регистрируем роутер мониторинга Google Sheets
+app.include_router(monitoring_router)
 
 if __name__ == "__main__":
     import uvicorn
