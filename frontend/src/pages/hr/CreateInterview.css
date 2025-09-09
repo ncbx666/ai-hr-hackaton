@@ -221,3 +221,34 @@
     flex-direction: column;
   }
 }
+
+/* Новый стиль для overlay и progress bar */
+.spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.progress-bar {
+  width: 300px;
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.progress-bar-fill {
+  width: 70%; /* Можно анимировать JS, сейчас статично */
+  height: 100%;
+  background: linear-gradient(90deg, #3498db 0%, #6dd5fa 100%);
+  border-radius: 10px 0 0 10px;
+  transition: width 0.4s ease;
+}
