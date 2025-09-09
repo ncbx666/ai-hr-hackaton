@@ -47,21 +47,7 @@
 
 ## Running the System
 
-### Option 1: Run Backend and Frontend Separately
-
-#### Backend
-1. Navigate to the backend directory:
-   ```
-   cd ai-hr-hackaton/backend/api
-   ```
-2. Run the backend server:
-   ```
-   python main_optimized.py
-   ```
-3. The backend will be available at: http://127.0.0.1:8000
-4. API documentation: http://127.0.0.1:8000/docs
-
-#### Using Combined Script
+### Using Combined Script
 1. Run both services together:
    ```
    ai-hr-hackaton/start_all.bat
