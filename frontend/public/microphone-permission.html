@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Настройка микрофона - HR Интервью</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+        }
+        .logo {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .status.waiting { 
+            background: #fff3cd; 
+            color: #856404; 
+            border: 1px solid #ffeaa7; 
+        }
+        .status.success { 
+            background: #d4edda; 
+            color: #155724; 
+            border: 1px solid #c3e6cb; 
+        }
+        .status.error { 
+            background: #f8d7da; 
+            color: #721c24; 
+            border: 1px solid #f5c6cb; 
+        }
+        
+        .big-button {
+            padding: 15px 30px;
+            font-size: 18px;
+            margin: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .request-btn { 
+            background: #28a745; 
+            color: white; 
+            border: 2px solid #28a745;
+        }
+        .request-btn:hover { 
+            background: #218838; 
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        .back-btn { 
+            background: #007bff; 
+            color: white; 
+            border: 2px solid #007bff;
+        }
+        .back-btn:hover { 
+            background: #0056b3; 
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+        }
+        .big-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            border-color: #6c757d;
+        }
+        .instructions {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .help-text {
+            margin-top: 30px; 
+            font-size: 14px; 
+            color: #666;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .progress-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .progress-step {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e9ecef;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin: 0 10px;
+        }
+        .progress-step.active {
+            background: #007bff;
+            color: white;
+        }
+        .progress-step.completed {
+            background: #28a745;
+            color: white;
+        }
+        .progress-line {
+            width: 50px;
+            height: 2px;
+            background: #e9ecef;
+        }
+        .progress-line.completed {
+            background: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🎤</div>
+        <h1>Настройка микрофона</h1>
+        <p class="subtitle">Для проведения интервью необходимо разрешить доступ к микрофону</p>
+        
+        <div class="progress-indicator">
+            <div class="progress-step active" id="step1">1</div>
+            <div class="progress-line" id="line1"></div>
+            <div class="progress-step" id="step2">2</div>
+            <div class="progress-line" id="line2"></div>
+            <div class="progress-step" id="step3">3</div>
+        </div>
+        
+        <div id="status" class="status waiting">
+            Нажмите кнопку ниже, чтобы браузер запросил доступ к микрофону
+        </div>
+        
+        <div>
+            <button id="requestBtn" class="big-button request-btn">
+                🔐 ЗАПРОСИТЬ ДОСТУП К МИКРОФОНУ
+            </button>
+            <button id="backBtn" class="big-button back-btn" style="display: none;">
+                ↩️ ВЕРНУТЬСЯ К ИНТЕРВЬЮ
+            </button>
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 Инструкция:</h3>
+            <div class="step">
+                <strong>Шаг 1:</strong> Нажмите кнопку "ЗАПРОСИТЬ ДОСТУП К МИКРОФОНУ"
+            </div>
+            <div class="step">
+                <strong>Шаг 2:</strong> В появившемся окне браузера нажмите <strong>"Разрешить"</strong> или <strong>"Allow"</strong>
+            </div>
+            <div class="step">
+                <strong>Шаг 3:</strong> После успешного получения доступа нажмите "ВЕРНУТЬСЯ К ИНТЕРВЬЮ"
+            </div>
+        </div>
+        
+        <div class="help-text">
+            💡 <strong>Важная информация:</strong><br>
+            • Если случайно нажали "Запретить", обновите страницу и попробуйте снова<br>
+            • Убедитесь, что ваш микрофон подключен и работает<br>
+            • В некоторых браузерах окно разрешения может появиться в адресной строке
+        </div>
+    </div>
+
+    <script>
+        const status = document.getElementById('status');
+        const requestBtn = document.getElementById('requestBtn');
+        const backBtn = document.getElementById('backBtn');
+        
+        // Элементы прогресса
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+        const line1 = document.getElementById('line1');
+        const line2 = document.getElementById('line2');
+        
+        function updateStatus(message, type = 'waiting') {
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+        
+        function updateProgress(currentStep) {
+            // Сброс всех шагов
+            [step1, step2, step3].forEach(step => {
+                step.className = 'progress-step';
+            });
+            [line1, line2].forEach(line => {
+                line.className = 'progress-line';
+            });
+            
+            // Активация текущего шага
+            if (currentStep >= 1) {
+                step1.className = 'progress-step completed';
+            }
+            if (currentStep >= 2) {
+                step2.className = 'progress-step completed';
+                line1.className = 'progress-line completed';
+            }
+            if (currentStep >= 3) {
+                step3.className = 'progress-step completed';
+                line2.className = 'progress-line completed';
+            }
+            
+            // Подсветка текущего шага
+            if (currentStep === 1) step1.className = 'progress-step active';
+            if (currentStep === 2) step2.className = 'progress-step active';
+            if (currentStep === 3) step3.className = 'progress-step active';
+        }
+        
+        // Получаем URL для возврата из параметров
+        const urlParams = new URLSearchParams(window.location.search);
+        const returnUrl = urlParams.get('return') || '/interview';
+        
+        requestBtn.onclick = async function() {
+            try {
+                updateStatus('🔍 Запрашиваю доступ к микрофону... Ожидайте появления окна браузера!', 'waiting');
+                updateProgress(2);
+                requestBtn.disabled = true;
+                
+                // Запрашиваем доступ к микрофону
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: true 
+                });
+                
+                // Если дошли сюда - доступ получен!
+                updateStatus('✅ Отлично! Доступ к микрофону получен. Теперь можете вернуться к интервью.', 'success');
+                updateProgress(3);
+                
+                // Останавливаем поток (не нужен больше)
+                stream.getTracks().forEach(track => track.stop());
+                
+                // Показываем кнопку возврата
+                requestBtn.style.display = 'none';
+                backBtn.style.display = 'inline-block';
+                
+                // Сохраняем статус разрешения в localStorage
+                localStorage.setItem('microphonePermissionGranted', 'true');
+                localStorage.setItem('microphonePermissionTime', Date.now().toString());
+                
+            } catch (error) {
+                console.error('Ошибка доступа к микрофону:', error);
+                
+                let errorMessage = '❌ ';
+                
+                if (error.name === 'NotAllowedError') {
+                    errorMessage += 'Доступ запрещен. Обновите страницу и нажмите "Разрешить" в окне браузера.';
+                } else if (error.name === 'NotFoundError') {
+                    errorMessage += 'Микрофон не найден. Проверьте подключение микрофона.';
+                } else if (error.name === 'NotSupportedError') {
+                    errorMessage += 'Ваш браузер не поддерживает запись звука. Попробуйте Chrome или Firefox.';
+                } else {
+                    errorMessage += 'Произошла ошибка: ' + error.message;
+                }
+                
+                updateStatus(errorMessage, 'error');
+                updateProgress(1);
+                requestBtn.disabled = false;
+            }
+        };
+        
+        backBtn.onclick = function() {
+            // Возвращаемся к интервью
+            try {
+                if (returnUrl.startsWith('http')) {
+                    window.location.href = returnUrl;
+                } else {
+                    window.location.href = window.location.origin + returnUrl;
+                }
+            } catch (error) {
+                // Fallback - просто закрываем вкладку или переходим назад
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.close();
+                }
+            }
+        };
+        
+        // Проверяем поддержку браузером
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            updateStatus('❌ Ваш браузер не поддерживает запись звука. Попробуйте Chrome, Firefox или Edge.', 'error');
+            requestBtn.disabled = true;
+        }
+        
+        // Проверяем, есть ли уже разрешение (в течение последних 24 часов)
+        const permissionGranted = localStorage.getItem('microphonePermissionGranted');
+        const permissionTime = localStorage.getItem('microphonePermissionTime');
+        const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+        
+        if (permissionGranted === 'true' && permissionTime && parseInt(permissionTime) > oneDayAgo) {
+            updateStatus('✅ Разрешение уже получено ранее. Можете вернуться к интервью.', 'success');
+            updateProgress(3);
+            requestBtn.style.display = 'none';
+            backBtn.style.display = 'inline-block';
+        } else {
+            // Очищаем старые разрешения
+            localStorage.removeItem('microphonePermissionGranted');
+            localStorage.removeItem('microphonePermissionTime');
+            updateProgress(1);
+        }
+    </script>
+</body>
+</html>
