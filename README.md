@@ -1,68 +1,85 @@
-# AI-HR Система автоматизированного собеседования
+# AI-HR: автоматизированное собеседование
 
-Система для проведения автоматизированных собеседований с использованием ИИ, включающая веб-интерфейс для HR-специалистов и кандидатов, голосовое взаимодействие и интеграцию с ML моделями.
+Хакатонный прототип системы, которая проводит первичное собеседование вместо
+HR. Система разбирает резюме и вакансию, генерирует вопросы через LLM,
+проводит голосовое интервью с кандидатом и выставляет итоговую оценку.
+Результаты выгружаются в Google Sheets.
 
-## Ключевые функции
+> Это код с хакатона (сентябрь 2025): в нём есть несколько вариантов сервера
+> и экспериментальные скрипты. Ниже описано, что из этого основное.
 
-* **Генерация вопросов:** ИИ-модель создаёт вопросы для собеседования на основе описания вакансии и резюме
-* **Голосовое интервью:** WebSocket-соединение для реального времени общения с кандидатом  
-* **Распознавание речи:** Google STT для преобразования голоса в текст
-* **Синтез речи:** Google TTS для голосовых ответов системы
-* **Автоматическая оценка:** ML-модели для оценки кандидата по ключевым критериям
-* **HR Dashboard:** Веб-интерфейс для создания собеседований и просмотра результатов
-* **Интеграция с Google Sheets:** Экспорт результатов для дальнейшего анализа
+## Как устроено
 
-## Архитектура системы
+| Часть | Где | Что делает |
+|---|---|---|
+| Фронтенд | `frontend/` | React + TypeScript: кабинет HR (создание интервью, требования, результаты) и интерфейс кандидата (регистрация, голосовое интервью) |
+| Бэкенд | `backend/api/main.py` | FastAPI на `:8000`: интервью, загрузка резюме и вакансий, результаты, выгрузка в Google Sheets |
+| Голосовой канал | `backend/api/simple_websocket_server.py` | WebSocket на `:8001`, к нему подключается страница интервью |
+| Речь | `backend/api/speech_service.py` | распознавание и синтез речи |
+| Генерация вопросов | `ds1/` | вопросы по резюме и вакансии через Gemini, правила и системный промпт рядом |
+| Разбор документов | `ds2/` | парсинг PDF резюме и вакансий, сборка транскрипта, классификаторы вопросов и ответов (`ds2/models/*.joblib`) |
+| Оценка кандидата | `ds3/` | скоринг по hard/soft skills и опыту через Gemini |
+| Telegram-бот | `backend/telegram_bot.go` | прототип бота на Go |
+| Тестовые данные | `mocks/`, `backend/materials/` | примеры резюме и вакансий |
 
-### Frontend (React + TypeScript)
-- HR Dashboard для создания собеседований
-- Интерфейс кандидата с голосовым взаимодействием
-- WebSocket клиент для реального времени
+`backend/api/main_optimized.py` — облегчённая демо-версия бэкенда: быстро
+стартует, но оценка в ней заглушка (всегда 85%), а загрузки файлов нет. Её
+запускает `start_all.bat`.
 
-### Backend (FastAPI + Python)  
-- REST API для управления собеседованиями
-- WebSocket сервер для голосового интервью
-- Интеграция с Google STT/TTS
-- PostgreSQL база данных
-- ML модели для генерации вопросов и оценки
+## Состояние
 
-### Используемые технологии
+- Демо-бэкенд (`main_optimized.py`) и голосовой WebSocket-сервер запускаются.
+- Полный бэкенд `main.py` сейчас **не стартует**: модули в `backend/api`
+  смешивают относительные и абсолютные импорты (`from .google_sheets_monitor`
+  и `from google_sheets import ...`), а `google_sheets_service` импортируется
+  не из того модуля. Фронтенд рассчитан именно на него (`/api/hr/upload-multi`,
+  `/api/hr/results`).
+- Автотестов нет, `backend/test_api.py` и `backend/system_test.py` — ручные
+  скрипты против запущенного сервера.
 
-* **AI Models:** Gemini 2.5 Flash, OpenAI GPT
-* **Backend:** FastAPI, Python, SQLAlchemy, WebSockets
-* **Frontend:** React, TypeScript, CSS3
-* **Database:** PostgreSQL
-* **Google Services:** Speech-to-Text, Text-to-Speech, Sheets API
-* **Real-time:** WebSocket connections
+## Настройка
 
-## Быстрый старт
+Нужны Python 3.10+, Node.js 18+ и ключи:
 
-# Running the AI-HR System
+- `GEMINI_API_KEY` / `GOOGLE_API_KEY` — генерация вопросов и оценка;
+- `OPENAI_API_KEY` — если используются модели OpenAI;
+- `GOOGLE_APPLICATION_CREDENTIALS` и `GOOGLE_SHEETS_CREDENTIALS` — путь к
+  JSON сервисного аккаунта Google (речь и Sheets), `SPREADSHEET_ID` — таблица
+  для результатов.
 
-## Prerequisites
-- Python 3.8 or higher
-- Node.js 14 or higher
-- pip (Python package manager)
-- npm (Node package manager)
+```bash
+cp backend/.env.example backend/.env   # заполнить ключи
+pip install -r backend/requirements.txt
+cd frontend && npm install
+```
 
-## Running the System
+Подробнее о получении ключей — в [backend/API_KEYS_SETUP.md](backend/API_KEYS_SETUP.md).
+Файлы `.env` и `*credentials*.json` в `.gitignore`, не коммитьте их.
 
-### Using Combined Script
-1. Run both services together:
-   ```
-   ai-hr-hackaton/start_all.bat
-   ```
+## Запуск
 
-## Accessing the Application
-- Frontend: http://localhost:3000
-- Backend API: http://127.0.0.1:8000
-- Backend API Documentation: http://127.0.0.1:8000/docs
+Три процесса:
 
-## Troubleshooting
-1. If you encounter path issues, make sure you're running the scripts from the correct directory
-2. If ports are already in use, you may need to stop existing processes:
-   - Backend: `taskkill /f /im python.exe`
-   - Frontend: `taskkill /f /im node.exe`
-3. If dependencies are missing, install them:
-   - Backend: `pip install -r requirements.txt` (in backend directory)
-   - Frontend: `npm install` (in frontend directory)
+```bash
+cd backend/api && python main_optimized.py           # API на :8000, документация на /docs
+cd backend/api && python simple_websocket_server.py  # голосовой канал на :8001
+cd frontend && npm start                             # интерфейс на :3000
+```
+
+На Windows бэкенд и фронтенд запускает `start_all.bat`. Полную версию
+(`python main.py` вместо `main_optimized.py`) сначала нужно починить, см.
+«Состояние».
+
+Отдельные модули:
+
+```bash
+python ds2/pdf_parser.py                 # PDF из mocks/ds2/{cv,vacansy} → JSON в mocks/ds2
+python ds1/test_generate_questions.py    # генерация вопросов на примере (нужен GEMINI_API_KEY)
+```
+
+## Документация
+
+- [RUNNING_INSTRUCTIONS.md](RUNNING_INSTRUCTIONS.md), [TESTING_GUIDE.md](TESTING_GUIDE.md) — запуск и проверка
+- [ds1/INTEGRATION_INSTRUCTIONS.md](ds1/INTEGRATION_INSTRUCTIONS.md) — подключение генератора вопросов
+- [backend/api/MONITORING_README.md](backend/api/MONITORING_README.md) — мониторинг выгрузки в Google Sheets
+- [OPTIMIZATION_REPORT.md](OPTIMIZATION_REPORT.md) — что ускоряли в демо-версии

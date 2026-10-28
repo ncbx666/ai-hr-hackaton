@@ -20,8 +20,8 @@ def test_command_line_interface():
     vacancy_path = "mocks/ds2/parsed_vacancy_бизнес_аналитик.json"
     output_path = "generated_questions.json"
     
-    # Фиктивный API ключ для демонстрации (в реальном использовании нужно заменить на настоящий)
-    api_key = "REMOVED_GOOGLE_API_KEY"
+    # Ключ Gemini берётся из окружения
+    api_key = os.environ["GEMINI_API_KEY"]
     
     # Команда для запуска генерации вопросов
     cmd = [
@@ -50,8 +50,8 @@ def test_module_interface():
         resume_path = "mocks/ds2/parsed_resume_образец_резюме_1_ведущий_специалист_ит.json"
         vacancy_path = "mocks/ds2/parsed_vacancy_бизнес_аналитик.json"
         
-        # Фиктивный API ключ для демонстрации
-        api_key = "REMOVED_GOOGLE_API_KEY"
+        # Ключ Gemini берётся из окружения
+        api_key = os.environ["GEMINI_API_KEY"]
         
         # Загружаем данные
         resume_data, vacancy_data = load_resume_and_vacancy(resume_path, vacancy_path)

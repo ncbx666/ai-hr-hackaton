@@ -263,11 +263,6 @@ from speech_service import SpeechService, MLQuestionGenerator
 # Инициализируем реальные сервисы
 speech_service = SpeechService()
 question_generator = MLQuestionGenerator()
-=======
-# Инициализируем реальные сервисы
-speech_service = SpeechService()
-question_generator = MLQuestionGenerator()
->>>>>>> fd9c1e3a04caefd684cd8abbd9c2b1a1516b0d68
 
 class InterviewSession:
     def __init__(self, session_id: str, job_description: str = ""):

@@ -1,0 +1,23 @@
+# Secrets
+.env
+*credentials*.json
+!backend/.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node
+node_modules/
+frontend/build/
+
+# Runtime data
+*.db
+*.log
+logs/
+backend/api/uploads/
+generated_questions.json
+
+.DS_Store
