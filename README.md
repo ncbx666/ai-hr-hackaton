@@ -28,12 +28,17 @@ HR. Система разбирает резюме и вакансию, гене
 
 ## Состояние
 
-- Демо-бэкенд (`main_optimized.py`) и голосовой WebSocket-сервер запускаются.
-- Полный бэкенд `main.py` сейчас **не стартует**: модули в `backend/api`
-  смешивают относительные и абсолютные импорты (`from .google_sheets_monitor`
-  и `from google_sheets import ...`), а `google_sheets_service` импортируется
-  не из того модуля. Фронтенд рассчитан именно на него (`/api/hr/upload-multi`,
-  `/api/hr/results`).
+- Полный бэкенд `main.py` запускается: загрузка файлов, создание интервью,
+  результаты и WebSocket `/ws/interview/{id}` отвечают.
+- Выгрузка в Google Sheets в `main.py` идёт через `google_sheets_service.py`,
+  а он только **имитирует** таблицы (пишет в лог и возвращает фиктивную
+  ссылку). Настоящая работа с gspread есть в `google_sheets.py`, но к серверу
+  не подключена.
+- Автоматическая обработка завершённых интервью (`interview_processor.py`)
+  использует `ds2`/`ds3` и требует `sentence-transformers`, которого нет в
+  `backend/requirements.txt`; без него обработка отключается с сообщением в
+  консоли.
+- Без ключей LLM вопросы генерируются из запасного набора.
 - Автотестов нет, `backend/test_api.py` и `backend/system_test.py` — ручные
   скрипты против запущенного сервера.
 
@@ -61,14 +66,13 @@ cd frontend && npm install
 Три процесса:
 
 ```bash
-cd backend/api && python main_optimized.py           # API на :8000, документация на /docs
+cd backend/api && python main.py                     # API на :8000, документация на /docs
 cd backend/api && python simple_websocket_server.py  # голосовой канал на :8001
 cd frontend && npm start                             # интерфейс на :3000
 ```
 
-На Windows бэкенд и фронтенд запускает `start_all.bat`. Полную версию
-(`python main.py` вместо `main_optimized.py`) сначала нужно починить, см.
-«Состояние».
+На Windows `start_all.bat` запускает облегчённый `main_optimized.py` и
+фронтенд — быстрее, но без загрузки файлов и с оценкой-заглушкой.
 
 Отдельные модули:
 

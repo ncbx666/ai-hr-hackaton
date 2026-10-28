@@ -22,7 +22,7 @@ class ResumeInfo(BaseModel):
     filename: str
     url: str
 
-from google_sheets import google_sheets_service
+from google_sheets_service import google_sheets_service
 from monitoring_endpoints import router as monitoring_router
 import subprocess
 import tempfile

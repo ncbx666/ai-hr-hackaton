@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
 
-from .google_sheets_monitor import google_sheets_monitor, OperationType, OperationStatus
+from google_sheets_monitor import google_sheets_monitor, OperationType, OperationStatus
 
 router = APIRouter(prefix="/api/monitor", tags=["monitoring"])
 
